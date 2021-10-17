@@ -12,28 +12,30 @@ class Println(Instruccion):
             value = i.interpretar(tree, table)
             genAux = C3D()
             gen = genAux.getInstance()
-            if(value.tipo == tipos.ENTERO):
+            if value.tipo == tipos.ENTERO:
                 gen.addPrint("d", value.value)
-            elif(value.tipo == tipos.DECIMAL):
+            elif value.tipo == tipos.DECIMAL:
                 gen.printFloat("g", value.value)
+            elif value.tipo == tipos.CARACTER:
+                gen.addPrint("c", ord(value.value))
             elif value.tipo == tipos.BOOLEAN:
                 tempLbl = gen.newLabel()
-                gen.putLabel(value.ev)
+                gen.addLabel(value.ev)
                 gen.printTrue()
                 gen.addGoto(tempLbl)
-                gen.putLabel(value.ef)
+                gen.addLabel(value.ef)
                 gen.printFalse()
-                gen.putLabel(tempLbl)
+                gen.addLabel(tempLbl)
             elif value.tipo == tipos.CADENA:
                 gen.fPrintString()
                 tmp = gen.addTemp()
                 gen.addExp(tmp, "P", "+", table.size)
                 gen.addExp(tmp, tmp, "+", "1")
                 gen.setStack(tmp, value.value)
-                gen.newEnv(table.size)
+                gen.newTable(table.size)
                 gen.callFun("printString")
                 gen.getStack(gen.addTemp(), "P")
-                gen.retEnv(table.size)
+                gen.getTable(table.size)
             else:
                 print("POR HACER")
         gen.addPrint("c", 10)

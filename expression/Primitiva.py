@@ -13,7 +13,7 @@ class Primitiva(Instruccion):
     def interpretar(self, tree, table):
         genAux = C3D()
         gen = genAux.getInstance()
-        if(self.tipo == tipos.ENTERO or self.tipo == tipos.DECIMAL):
+        if(self.tipo == tipos.ENTERO or self.tipo == tipos.DECIMAL or self.tipo == tipos.CARACTER):
             return Retornar(str(self.value), self.tipo, False)
         elif self.tipo == tipos.BOOLEAN:
             if self.ev == '':
@@ -21,12 +21,12 @@ class Primitiva(Instruccion):
             if self.ef == '':
                 self.ef = gen.newLabel()
             
-            if(self.value):
+            if(self.value == "true"):
                 gen.addGoto(self.ev)
                 gen.addGoto(self.ef)
             else:
-                gen.addGoto(self.ev)
                 gen.addGoto(self.ef)
+                gen.addGoto(self.ev)
             
             ret = Retornar(self.value, self.tipo, False)
             ret.ev = self.ev

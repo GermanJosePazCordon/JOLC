@@ -1,9 +1,7 @@
-
-from abstract.NodoAST import NodoAST
 from abstract.Instruccion import Instruccion
+from abstract.Retorno import Retornar
 from tablaSimbolos.Tipo import tipos
-from expression.Primitiva import Primitiva
-from excepciones.Excepciones import Excepciones
+from tablaSimbolos.C3D import C3D
 
 
 class Logica(Instruccion):
@@ -26,87 +24,54 @@ class Logica(Instruccion):
         p1 = None
         p2 = None
         pu = None
-        self.tipo = tipos.BOOLEAN
-        if self.opU is None:
-            p1 = self.op1.interpretar(tree, table)
-            if isinstance(p1, Excepciones):
-                return p1
-            left = p1.value
+        genAux = C3D()
+        gen = genAux.getInstance()
 
-            p2 = self.op2.interpretar(tree, table)
-            if isinstance(p2, Excepciones):
-                return p2
-            right = p2.value
-            
-            if p1.tipo == tipos.BOOLEAN:
-                if str(left).lower() == "true":
-                    left = True
-                else:
-                    left = False
-            if p2.tipo == tipos.BOOLEAN:
-                if str(right).lower() == "true":
-                    right = True
-                else:
-                    right = False
-        else:
-            pu = self.opU.interpretar(tree, table)
-            if isinstance(pu, Excepciones):
-                return pu
-            unario = pu.value
-            if pu.tipo == tipos.BOOLEAN:
-                if str(unario).lower() == "true":
-                    unario = True
-                else:
-                    unario = False
+        self.verifyLabel()
+        lbl = ''
+
         if self.operador == '&&':
-            if self.op1.tipo == tipos.BOOLEAN and self.op2.tipo == tipos.BOOLEAN:
-                if left and right:
-                    return self.retorno("true")
-                else:
-                    return self.retorno("false")
-            else:
-                tree.addError(Excepciones("Semántico", "Error de tipos en operacion &&", self.line, self.column))
-                return Excepciones("Semántico", "Error de tipos en operacion &&", self.line, self.column)
+            lbl = self.op1.ev = gen.newLabel()
+            self.op2.ev = self.ev
+            self.op1.ef = self.op2.ef = self.ef
         elif self.operador == '||':
-            if self.op1.tipo == tipos.BOOLEAN and self.op2.tipo == tipos.BOOLEAN:
-                if left or right:
-                    return self.retorno("true")
-                else:
-                    return self.retorno("false")
-            else:
-                tree.addError(Excepciones("Semántico", "Error de tipos en operacion ||", self.line, self.column))
-                return Excepciones("Semántico", "Error de tipos en operacion ||", self.line, self.column)
-        elif self.operador == '!':
-            if self.opU.tipo == tipos.BOOLEAN:
-                if unario:
-                    return self.retorno("false")
-                else:
-                    return self.retorno("true")
-            else:
-                tree.addError(Excepciones("Semántico", "Error de tipos en operacion !", self.line, self.column))
-                return Excepciones("Semántico", "Error de tipos en operacion !", self.line, self.column)
+            self.op1.ev = self.op2.ev = self.ev
+            lbl = self.op1.ef = gen.newLabel()
+            self.op2.ef = self.ef
         else:
-            tree.addError(Excepciones("Semántico", "Tipo de operacion erroneo", self.line, self.column))
-            return Excepciones("Semántico", "Tipo de operacion erroneo", self.line, self.column)
-                
-            
-    def retorno(self, result):
-        return Primitiva(tipos.BOOLEAN, str(result).lower(), self.line, self.column)
+            lbl = self.opU.ef = gen.newLabel()
+            self.opU.ev = self.ef
+            self.opU.ef = self.ev
+            pu = self.opU.interpretar(tree, table)
+            if pu.tipo != tipos.BOOLEAN:
+                # ERRORES
+                return
+            retorno = Retornar(None, tipos.BOOLEAN, False)
+            retorno.ev = self.ev
+            retorno.ef = self.ef
+            return retorno
+        left = self.op1.interpretar(tree, table)
+        if left.tipo != tipos.BOOLEAN:
+            # ERRORES
+            return
+        gen.addLabel(lbl)
+        right = self.op2.interpretar(tree, table)
+        if right.tipo != tipos.BOOLEAN:
+            # ERRORES
+            return
+        retorno = Retornar(None, tipos.BOOLEAN, False)
+        retorno.ev = self.ev
+        retorno.ef = self.ef
+        return retorno
+    
+    def verifyLabel(self):
+        genAux = C3D()
+        gen = genAux.getInstance()
+        if self.ev == '':
+            self.ev = gen.newLabel()
+        if self.ef == '':
+            self.ef = gen.newLabel()
 
     def getNodo(self):
-        nodo = NodoAST("LOGICA")
-        if self.opU is None:
-            nodo2 = NodoAST("EXPRESION")
-            nodo2.agregarHijoNodo(self.op1.getNodo())
-            nodo.agregarHijoNodo(nodo2)
-            nodo.agregarHijo(self.operador)
-            nodo3 = NodoAST("EXPRESION")
-            nodo3.agregarHijoNodo(self.op2.getNodo())
-            nodo.agregarHijoNodo(nodo3)
-        else: 
-            nodo.agregarHijo(self.operador)
-            nodo2 = NodoAST("EXPRESION")
-            nodo2.agregarHijoNodo(self.opU.getNodo())
-            nodo.agregarHijoNodo(nodo2)
-        return nodo
+        pass
         

@@ -158,8 +158,24 @@ class Aritmetica(Instruccion):
                     pass
             elif p1.tipo == tipos.CADENA:  # Cadena * algo
                 if p2.tipo == tipos.CADENA:
-                    # ERRORES
-                    pass
+                    self.tipo = tipos.CADENA
+                    gen.concatString()
+                    tmp = gen.addTemp()
+
+                    gen.addExp(tmp, 'P', '+', table.size)
+                    
+                    gen.addExp(tmp, tmp, "+", '1')
+                    gen.setStack(tmp, left)
+
+                    gen.addExp(tmp, tmp, '+', '1')
+                    gen.setStack(tmp, right)
+
+                    gen.newTable(table.size)
+                    gen.callFun('concatString')
+                    temp = gen.addTemp()
+                    gen.getStack(temp, 'P')
+                    gen.getTable(table.size)
+                    return Retornar(temp, tipos.CADENA, True)
                 else:
                     # ERRORES
                     pass
@@ -206,7 +222,90 @@ class Aritmetica(Instruccion):
             else:
                #Error
                pass
-        
+        elif self.operador == '^':
+            if p1.tipo == tipos.ENTERO or p1.tipo == tipos.DECIMAL:
+                if p2.tipo == tipos.ENTERO:
+                    self.tipo = p1.tipo
+                    gen.potencia()
+                    tmp = gen.addTemp()
+
+                    gen.addExp(tmp, 'P', '+', table.size)
+                    
+                    gen.addExp(tmp, tmp, "+", '1')
+                    gen.setStack(tmp, left)
+
+                    gen.addExp(tmp, tmp, '+', '1')
+                    gen.setStack(tmp, right)
+
+                    gen.newTable(table.size)
+                    gen.callFun('potencia')
+                    temp = gen.addTemp()
+                    gen.getStack(temp, 'P')
+                    gen.getTable(table.size)
+                    return Retornar(temp, p1.tipo, True)
+                else:
+                    #Error
+                    pass
+            elif p1.tipo == tipos.CADENA:
+                if p2.tipo == tipos.ENTERO:
+                    self.tipo = tipos.CADENA
+                    gen.potenciaString()
+                    tmp = gen.addTemp()
+
+                    gen.addExp(tmp, 'P', '+', table.size)
+                    
+                    gen.addExp(tmp, tmp, "+", '1')
+                    gen.setStack(tmp, left)
+
+                    gen.addExp(tmp, tmp, '+', '1')
+                    gen.setStack(tmp, right)
+
+                    gen.newTable(table.size)
+                    gen.callFun('potenciaString')
+                    temp = gen.addTemp()
+                    gen.getStack(temp, 'P')
+                    gen.getTable(table.size)
+                    return Retornar(temp, tipos.CADENA, True)
+                else:
+                    #Error
+                    pass
+            else:
+                #Error
+                pass
+        elif self.operador == '%':
+            self.tipo = tipos.CADENA
+            gen.modulo()
+            tmp = gen.addTemp()
+            gen.addExp(tmp, 'P', '+', table.size)
+            gen.addExp(tmp, tmp, "+", '1')
+            gen.setStack(tmp, left)
+            gen.addExp(tmp, tmp, '+', '1')
+            gen.setStack(tmp, right)
+            
+            gen.addExp(tmp, tmp, '+', '1')
+            gen.setStack(tmp, int(float(left)/float(right)))
+            
+            gen.newTable(table.size)
+            gen.callFun('modulo')
+            temp = gen.addTemp()
+            gen.getStack(temp, 'P')
+            gen.getTable(table.size)
+            return Retornar(temp, tipos.DECIMAL, True)
+        elif self.operador == '-u':
+            if pu.tipo == tipos.ENTERO:
+                self.tipo = tipos.ENTERO
+                temp = gen.addTemp()
+                gen.addExp(temp, unario, "*", "-1")
+                return self.retorno(temp, True)
+            elif pu.tipo == tipos.DECIMAL:
+                self.tipo = tipos.DECIMAL
+                temp = gen.addTemp()
+                gen.addExp(temp, unario, "*", "-1")
+                return self.retorno(temp, True)
+            else:
+                #Error
+                pass
+    
     def retorno(self, result, temp):
         return Retornar(result, self.tipo, temp)
 
