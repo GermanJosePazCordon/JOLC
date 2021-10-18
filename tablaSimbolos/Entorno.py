@@ -11,28 +11,28 @@ class Entorno:
         self.functions = {}
         self.structs = {}
     
-    def saveVar(self, ids, tipo, heap):
+    def setVariable(self, ids, tipo, heap):
         if ids in self.variables.keys():
             print("Ya existe la variable")
         else:
-            variable = Symbol(ids, tipo, self.size, self.last == None, heap)
+            variable = Simbolo(ids, tipo, self.size, self.last == None, heap)
             self.size += 1
             self.variables[ids] = variable
         return self.variables[ids]
 
-    def saveFunc(self, ids, funcion):
+    def setFuncion(self, ids, funcion):
         if ids in self.functions.keys():
             print("Ya existe la funcion")
         else:
             self.functions[ids] = funcion
     
-    def saveStruct(self, ids, atributo):
+    def setStruct(self, ids, atributo):
         if ids in self.structs.keys():
             print("Ya existe el struct")
         else:
             self.structs[ids] = atributo
 
-    def getVar(self, varible):
+    def getVariable(self, varible):
         entorno = self
         while entorno != None:
             if varible in entorno.variables.keys():

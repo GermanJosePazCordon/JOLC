@@ -28,14 +28,14 @@ class Primitiva(Instruccion):
                 gen.addGoto(self.ef)
                 gen.addGoto(self.ev)
             
-            ret = Retornar(self.value, self.tipo, False)
-            ret.ev = self.ev
-            ret.ef = self.ef
+            retorno = Retornar(self.value, self.tipo, False)
+            retorno.ev = self.ev
+            retorno.ef = self.ef
 
-            return ret
+            return retorno
         elif self.tipo == tipos.CADENA:
-            retTemp = gen.addTemp()
-            gen.addExp(retTemp, 'H', '', '')
+            temp = gen.addTemp()
+            gen.addExp(temp, 'H', '', '')
 
             for char in str(self.value):
                 gen.setHeap('H', ord(char))   # heap[H] = NUM;
@@ -44,7 +44,7 @@ class Primitiva(Instruccion):
             gen.setHeap('H', '-1')            # FIN DE CADENA
             gen.nextHeap()
 
-            return Retornar(retTemp, tipos.CADENA, True)
+            return Retornar(temp, tipos.CADENA, True)
         else:
             print('Por hacer')
     

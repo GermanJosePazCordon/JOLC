@@ -6,15 +6,16 @@ class C3D:
         # Contadores
         self.countTemp = 0
         self.countLabel = 0
-        # Code
         self.code = ''
         self.funcs = ''
         self.natives = ''
         self.inFunc = False
         self.inNatives = False
-        # Lista de Temporales
         self.temps = []
-        # Lista de Nativas
+        #-----------------------
+        self.imports = '\n\t"fmt";'
+        self.imath = False
+        #-----------------------
         self.printString = False
         self.BconcatString = False
         self.Bpotencia = False
@@ -39,7 +40,9 @@ class C3D:
         C3D.gen = C3D()
     
     def getHeader(self):
-        ret = 'package main;\n\nimport (\n\t"fmt"\n)\n\n'
+        ret = 'package main;\n\nimport ('
+        ret += self.imports 
+        ret += '\n)\n\n'
         if len(self.temps) > 0:
             ret += 'var '
             for temp in range(len(self.temps)):
@@ -302,7 +305,7 @@ class C3D:
         self.inNatives = False
     
     def potenciaString(self):
-        if self.Bpotencia:
+        if self.BpotenciaString:
             return
         self.BpotenciaString = True
         self.inNatives = True
@@ -470,12 +473,12 @@ class C3D:
         self.addGoto(continuando)
         
         self.addLabel(salida)
-        self.setStack("P", 1)
+        self.setStack("P", 1) #CASO DONDE SON IGUALES
         salida = self.newLabel()
         self.addGoto(salida)
         
         self.addLabel(condicional)
-        self.setStack("P", 0)
+        self.setStack("P", 0) #CADO DONDE SON DIFERENTES
         self.addLabel(salida)
         
         self.endFun()
