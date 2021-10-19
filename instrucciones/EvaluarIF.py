@@ -40,7 +40,7 @@ class EvaluarIF(Instruccion):
             instrucciones = self.instruccionElse.getInstrucciones()
             for j in instrucciones:
                 j.interpretar(tree, table)
-                gen.addLabel(salida)
+        gen.addLabel(salida)
 
     def getNodo(self):
         pass

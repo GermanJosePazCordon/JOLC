@@ -1,15 +1,15 @@
-
-from abstract.NodoAST import NodoAST
-from tablaSimbolos.TablaSimbolos import tablaSimbolos
+from sys import addaudithook
 from expression.Primitiva import Primitiva
 from abstract.Instruccion import Instruccion
 from tablaSimbolos.Tipo import tipos
-from tablaSimbolos.Simbolo import Simbolo
+from tablaSimbolos.C3D import C3D
+from tablaSimbolos.Entorno import Entorno
 from excepciones.Excepciones import Excepciones
 from instrucciones.Break import Break
 from instrucciones.Return import Return
 from instrucciones.Continue import Continue
 from instrucciones.DeclararVariable import DeclararVariable
+from expression.Variable import Variable
 
 class For(Instruccion):
     def __init__(self, variable, types, rangoinf, rangosup, cadena, listaInstrucciones, line, column):
@@ -21,164 +21,133 @@ class For(Instruccion):
         self.types = types
         self.rangoinf = rangoinf
         self.rangosup = rangosup
-        self.pos = cadena
+        self.cadena = cadena
     
     def interpretar(self, tree, table):
-        if self.rangoinf is not None:
-            inferior = self.rangoinf.interpretar(tree, table)
-        if self.rangosup is not None:
-            superior = self.rangosup.interpretar(tree, table)
-        if self.pos is not None:
-            tmp = self.pos.interpretar(tree, table)
-            if tmp.tipo == tipos.CADENA:
-                self.types = 'cadena'
-                cadena = tmp
-            else:
-                self.types = 'vector'
-                vector = tmp
-                
-        if self.types == 'rango':
-            if  inferior.tipo != tipos.ENTERO and inferior.tipo != tipos.DECIMAL:
-                tree.addError(Excepciones("Semántico", "Tipo de rango inferior invalido", self.line, self.column))
-                return Excepciones("Semantico", "Tipo de rango inferior invalido", self.line, self.column)
-            if  superior.tipo != tipos.ENTERO and superior.tipo != tipos.DECIMAL:
-                tree.addError(Excepciones("Semántico", "Tipo de rango superior invalido", self.line, self.column))
-                return Excepciones("Semantico", "Tipo de rango superior invalido", self.line, self.column)
-            return self.rangos(tree, table, inferior, superior)
-        elif self.types == 'cadena':
-            return self.cadenas(tree, table, cadena.value)
-        elif self.types == 'vector':
-            return self.vectores(tree, table, vector.value)
-            
-    def rangos(self, tree, table, rangoinf, rangosup):
-        if rangoinf.tipo == tipos.ENTERO:
-            ri = int(rangoinf.value)
+        if self.types == "rango":
+            self.rango(tree, table)
+        elif self.types == "cadena":
+            self.cadenas(tree, table)
         else:
-            ri = float(rangoinf.value)
-        if rangosup.tipo == tipos.ENTERO:
-            ru = int(rangosup.value)
-        else:
-            ru = float(rangosup.value)
-        if ru < ri:
-            tree.addError(Excepciones("Semántico", "Rango inferior mayor a rango superior", self.line, self.column))
-            exp =  Excepciones("Semantico", "Rango inferior mayor a rango superior", self.line, self.column)
-            tree.updateConsola(str(exp.show()))
-            return exp
-        rango = int(float(ru - ri)) + 1
-        tabla = tablaSimbolos(table)
-        tabla.setEntorno("for")
-        tree.addTabla(tabla)
-        iterador = tabla.getVariable(self.variable)
-        if iterador is None:
-            tabla.setVariable(Simbolo(self.line, self.column, tipos.ENTERO, self.variable, 0))
-            iterador = tabla.getVariable(self.variable)
-        for i in range(rango):
-            iterador.setValue(i + ri)
-            iterador.setTipo(rangoinf.tipo)
-            tabla2 = tablaSimbolos(tabla)
-            tabla2.setEntorno("for")
-            tree.addTabla(tabla2)
-            for m in self.listaInstrucciones:
-                if isinstance(m, Excepciones):
-                    tree.updateConsola(str(m))
-                    tree.addError(m.toString())
-                    continue
-                result = m.interpretar(tree, tabla2)
-                if isinstance(result, Excepciones):
-                    tree.updateConsola(result.toString())
-                if isinstance(result, Primitiva): return result
-                if isinstance(result, Break): return None
-                if isinstance(result, Continue): break
-                if isinstance(result, Return): return result
-                
-    def cadenas(self, tree, table, cadena):
-        tabla = tablaSimbolos(table)
-        tabla.setEntorno("for")
-        tree.addTabla(tabla)
+            self.vector(tree, table)
+        return
         
-        for i in cadena:
-            
-            declara = Simbolo(self.line, self.column, tipos.CADENA, self.variable, i)
-            tabla.updateVariable(declara)
-            
-            tabla2 = tablaSimbolos(tabla)
-            tabla2.setEntorno("for")
-            tree.addTabla(tabla2)
-            
-            for m in self.listaInstrucciones:
-                if isinstance(m, Excepciones):
-                    tree.updateConsola(str(m))
-                    tree.addError(m.toString())
-                    continue
-                result = m.interpretar(tree, tabla2)
-                if isinstance(result, Excepciones):
-                    tree.updateConsola(result.toString())
-                if isinstance(result, Break): return None
-                if isinstance(result, Continue): break
-                if isinstance(result, Return): return result
+    
+    def rango(self, tree, table):
+        genAux = C3D()
+        gen = genAux.getInstance()
         
-    def vectores(self, tree, table, arreglo):
+        ri = self.rangoinf.interpretar(tree, table)
+        ru = self.rangosup.interpretar(tree, table)
+        if ri.tipo != tipos.ENTERO and ri.tipo != tipos.DECIMAL:
+            #Error
+            print("Tipo incorrecto rango inferior")
+            return
+        if ru.tipo != tipos.ENTERO and ru.tipo != tipos.DECIMAL:
+            #Error
+            print("Tipo incorrecto rango superior")
+            return
         
-        tabla = tablaSimbolos(table)
-        tabla.setEntorno("for")
-        tree.addTabla(tabla)
+        tabla = Entorno(table) #Nueva tabla
         
-        for i in arreglo:
-            tmp = i.interpretar(tree, table)
+        variable = tabla.getVariable(self.variable)
+        if variable is None:
+            declara = DeclararVariable(ri.tipo, self.variable, self.rangoinf, None, self.line, self.column)
+            declara.interpretar(tree, tabla)
             
-            declara = Simbolo(self.line, self.column, tmp.tipo, self.variable, tmp.value)
-            tabla.updateVariable(declara)
-            
-            tabla2 = tablaSimbolos(tabla)
-            tabla2.setEntorno("for")
-            tree.addTabla(tabla2)
-            
-            for m in self.listaInstrucciones:
-                if isinstance(m, Excepciones):
-                    tree.updateConsola(str(m))
-                    tree.addError(m.toString())
-                    continue
-                result = m.interpretar(tree, tabla2)
-                if isinstance(result, Excepciones):
-                    tree.updateConsola(result.toString())
-                if isinstance(result, Break): return None
-                if isinstance(result, Continue): break
-                if isinstance(result, Return): return result
+        tmpP = gen.addTemp()
+        declara = gen.addTemp()
+        gen.addExp(tmpP, 'P', '+', '1')
+        gen.setStack(tmpP, ri.value)
+        
+        condicional = gen.newLabel()
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        iterador = gen.newLabel()
+        
+        gen.addLabel(continuando)
+        gen.getStack(declara, tmpP)
+        
+        tabla.breakk = salida
+        tabla.continuee = iterador
+        
+        gen.newIF(declara, "<=", ru.value, condicional)
+        gen.addGoto(salida)
+        gen.addLabel(condicional)
+        
+        variable = tabla.getVariable(self.variable)
+        gen.setStack(variable.pos, declara)
+        for i in self.listaInstrucciones:
+            i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+        
+        gen.addLabel(iterador)
+        gen.addExp(declara, declara, "+", "1")
+        gen.setStack(tmpP, declara)
+        
+        gen.addGoto(continuando) 
+        gen.addLabel(salida)
+    
+    def cadenas(self, tree, table):
+        genAux = C3D()
+        gen = genAux.getInstance()
+        
+        cadena = self.cadena.interpretar(tree, table)
+        
+        if cadena.tipo != tipos.CADENA:
+            #Error
+            print("Tipo incorrecto cadena invalido")
+            return
+        
+        tabla = Entorno(table) #Nueva tabla
+        
+        variable = tabla.getVariable(self.variable)
+        if variable is None:
+            value = Primitiva(tipos.CADENA, "X", self.line, self.column)
+            declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
+            declara.interpretar(tree, tabla)
+        
+        tmpP = gen.addTemp()
+        tmpH = gen.addTemp()
+        gen.addExp('H', '0', '', '')
+        gen.addExp(tmpH, 'H', '', '')
+        gen.addExp(tmpP, 'P', '', '')
+        
+        
+        condicional = gen.newLabel()
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        iterador = gen.newLabel()
+        
+        tmp = gen.addTemp()
+        gen.addLabel(continuando)
+        gen.getHeap(tmp, tmpH)
+        
+        tabla.breakk = salida
+        tabla.continuee = iterador
+        
+        gen.newIF(tmp, "!=", "-1", condicional)
+        gen.addGoto(salida)
+        gen.addLabel(condicional)
+        #------------------------------------
+        variable = tabla.getVariable(self.variable)
+        var = gen.addTemp() 
+        gen.getStack(var, variable.pos)
+        gen.setHeap(var, tmp)
+        for i in self.listaInstrucciones:
+            i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+        gen.addGoto(iterador)
+        gen.addLabel(iterador)
+        gen.addExp(tmpH, tmpH, "+", "1")
+        #------------------------------------
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+        
+        
+        
+    
+    def vector(self, tree, table):
+        pass
     
     def getNodo(self):
-        nodo = NodoAST("CICLO_FOR")
-        nodo.agregarHijo("FOR")
-        nodo.agregarHijo(self.variable)
-        nodo.agregarHijo("IN")
-        if self.types == 'rango':
-            nuevo = NodoAST("EXPRESION")
-            nuevo.agregarHijoNodo(self.rangoinf.getNodo())
-            nodo.agregarHijoNodo(nuevo)
-            nodo.agregarHijo(":")
-            nuevo = NodoAST("EXPRESION")
-            nuevo.agregarHijoNodo(self.rangosup.getNodo())
-            nodo.agregarHijoNodo(nuevo)
-        else:
-            nuevo = NodoAST("EXPRESION")
-            nuevo.agregarHijoNodo(self.pos.getNodo())
-            nodo.agregarHijoNodo(nuevo) 
-        nuevo = NodoAST("INSTRUCCIONES")
-        one = True
-        for i in self.listaInstrucciones:
-            if one:
-                nuevo2 = NodoAST("INSTRUCCION")
-                nuevo2.agregarHijoNodo(i.getNodo())
-                nuevo.agregarHijoNodo(nuevo2)
-                one = False
-            else:
-                tmp = nuevo
-                nuevo2 = NodoAST("INSTRUCCION")
-                nuevo = NodoAST("INSTRUCCIONES")
-                nuevo.agregarHijoNodo(tmp)
-                nuevo2.agregarHijoNodo(i.getNodo())
-                nuevo.agregarHijoNodo(nuevo2)
-        nodo.agregarHijoNodo(nuevo)
-        nodo.agregarHijo("END")
-        nodo.agregarHijo(";")
-        return nodo
+        pass
     

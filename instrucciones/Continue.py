@@ -1,5 +1,5 @@
-from abstract.NodoAST import NodoAST
 from abstract.Instruccion import Instruccion
+from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
 class Continue(Instruccion):
@@ -9,10 +9,13 @@ class Continue(Instruccion):
         self.column  = column
         
     def interpretar(self, tree, table):
-        return self
+        if table.continuee == '':
+            #Error
+            print("Continue fuera de ciclo")
+            return
+        genAux = C3D()
+        gen = genAux.getInstance()
+        gen.addGoto(table.continuee)
     
     def getNodo(self):
-        nodo = NodoAST("TRANSFERENCIA")
-        nodo.agregarHijo("CONTINUE")
-        nodo.agregarHijo(";")
-        return nodo
+        pass

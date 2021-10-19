@@ -1,5 +1,6 @@
 from abstract.NodoAST import NodoAST
 from abstract.Instruccion import Instruccion
+from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
 class Break(Instruccion):
@@ -9,10 +10,13 @@ class Break(Instruccion):
         self.column  = column
         
     def interpretar(self, tree, table):
-        return self
+        if table.breakk == '':
+            #Error
+            print("Break fuera de ciclo")
+            return
+        genAux = C3D()
+        gen = genAux.getInstance()
+        gen.addGoto(table.breakk)
     
     def getNodo(self):
-        nodo = NodoAST("TRANSFERENCIA")
-        nodo.agregarHijo("BREAK")
-        nodo.agregarHijo(";")
-        return nodo
+        pass

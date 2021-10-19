@@ -5,11 +5,18 @@ class Entorno:
         self.last = last
         # NUEVO
         self.size = 0
+        self.breakk = ''
+        self.continuee = ''
+        self.returnn = ''
         if(last != None):
-            self.size = self.last.size
+            self.size = last.size
+            self.breakk = last.breakk
+            self.continuee = last.continuee
+            self.returnn = last.returnn
         self.variables = {}
         self.functions = {}
         self.structs = {}
+        
     
     def setVariable(self, ids, tipo, heap):
         if ids in self.variables.keys():

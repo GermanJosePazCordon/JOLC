@@ -6,7 +6,7 @@ class DeclararVariable(Instruccion):
     def __init__(self, operador, id, value, globall, line, column):
         super().__init__(tipos.CADENA, line, column)
         
-        self.operador = operador
+        self.tipo = operador
         self.id = id
         self.value = value
         self.line = line
@@ -14,6 +14,10 @@ class DeclararVariable(Instruccion):
         self.globall = globall
     
     def interpretar(self, tree, table):
+        '''if self.tipo is not None and self.tipo != self.value.tipo:
+            #Error
+            print("Tipos incorrectos al declarar variable")
+            return'''
         genAux = C3D()
         gen = genAux.getInstance()
         value = self.value.interpretar(tree, table)
