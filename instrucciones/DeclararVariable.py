@@ -23,7 +23,7 @@ class DeclararVariable(Instruccion):
         value = self.value.interpretar(tree, table)
         vairable = table.getVariable(self.id)
         if vairable == None:
-            vairable = table.setVariable(self.id, value.tipo, (value.tipo == tipos.CADENA or value.tipo == tipos.STRUCT))
+            vairable = table.setVariable(self.id, value.tipo, (value.tipo == tipos.CADENA or value.tipo == tipos.STRUCT), value.vector)
         vairable.tipo = value.tipo
         pos = vairable.pos
         if(not vairable.isGlobal):

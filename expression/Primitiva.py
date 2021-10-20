@@ -45,8 +45,35 @@ class Primitiva(Instruccion):
             gen.nextHeap()
 
             return Retornar(temp, tipos.CADENA, True)
+        elif self.tipo == tipos.VECTOR:
+            tmpH = gen.addTemp()
+            gen.addExp(tmpH, 'H', '', '')
+            
+            tmp = gen.addTemp()
+            gen.addExp(tmp, tmpH, "+", 1)
+            
+            gen.setHeap('H', len(self.value))
+            size = len(self.value) + 1
+            gen.addExp('H', 'H', '+', size)
+            
+            for i in self.value: 
+                gen.setHeap(tmp, i.interpretar(tree, table).value)
+                gen.addExp(tmp, tmp, '+', '1')
+
+            vec = self.getTipo(self.value)
+            return Retornar(tmpH, tipos.VECTOR, True, vec)            
         else:
             print('Por hacer')
+            
+    def getTipo(self, vector):
+        vec = []
+        for i in vector:
+            if i.tipo == tipos.VECTOR:
+                tmp = self.getTipo(i.value)
+                vec.append(tmp)
+            else:
+                vec.append(i.tipo)
+        return vec
     
     def getNodo(self):
         pass

@@ -1,8 +1,9 @@
 class Retornar:
-    def __init__(self, value, tipo, tmp, auxTipo = ""):
+    def __init__(self, value, tipo, tmp, vector = ''):
+        
         self.value = value
         self.tipo = tipo
-        self.auxTipo = auxTipo
         self.tmp = tmp
         self.ev = ''
         self.ef = ''
+        self.vector = vector

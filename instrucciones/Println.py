@@ -36,6 +36,17 @@ class Println(Instruccion):
                 gen.callFun("printString")
                 gen.getStack(gen.addTemp(), "P")
                 gen.getTable(table.size)
+            elif value.tipo == tipos.VECTOR:
+                gen.printVector()
+                tmp = gen.addTemp()
+                gen.addExp(tmp, "P", "+", table.size)
+                gen.addExp(tmp, tmp, "+", "1")
+                gen.setStack(tmp, value.value)
+                gen.newTable(table.size)
+                gen.callFun("printVector")
+                gen.getStack(gen.addTemp(), "P")
+                gen.getTable(table.size)
+                pass
             else:
                 print("POR HACER")
         gen.addPrint("c", 10)

@@ -18,11 +18,11 @@ class Entorno:
         self.structs = {}
         
     
-    def setVariable(self, ids, tipo, heap):
+    def setVariable(self, ids, tipo, heap, vector):
         if ids in self.variables.keys():
             print("Ya existe la variable")
         else:
-            variable = Simbolo(ids, tipo, self.size, self.last == None, heap)
+            variable = Simbolo(ids, tipo, self.size, self.last == None, heap, "", vector)
             self.size += 1
             self.variables[ids] = variable
         return self.variables[ids]

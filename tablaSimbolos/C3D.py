@@ -22,6 +22,7 @@ class C3D:
         self.BpotenciaString = False
         self.Bmodulo = False
         self.BcompararString = False
+        self.BprintVector = False
         
     def cleanAll(self):
         # Contadores
@@ -480,6 +481,46 @@ class C3D:
         self.addLabel(condicional)
         self.setStack("P", 0) #CADO DONDE SON DIFERENTES
         self.addLabel(salida)
+        
+        self.endFun()
+        self.inNatives = False 
+    
+    def printVector(self):
+        if self.BprintVector:
+            return
+        self.BprintVector = True
+        self.inNatives = True
+        self.initFun("printVector")
+        
+        tmpP = self.addTemp()
+        self.addExp(tmpP, "P", "+", "1")
+        
+        inicio = self.addTemp()
+        self.getStack(inicio, tmpP)
+        
+        size = self.addTemp()
+        self.getHeap(size, inicio)
+        self.addExp(inicio, inicio, "+", "1")
+        
+        self.addPrint('c', '91')
+        
+        elemento = self.newLabel()
+        salida = self.newLabel()
+        
+        self.addLabel(elemento)
+        tmp = self.addTemp()
+        self.getHeap(tmp, inicio)
+        self.addPrint('d', tmp)
+        self.addExp(size, size, "-", "1")
+        self.addExp(inicio, inicio, "+", "1")
+        
+        self.newIF(size, "==", "0", salida)
+        self.addPrint('c', '44')
+        self.addPrint('c', '32')
+        self.addGoto(elemento)
+        
+        self.addLabel(salida)
+        self.addPrint('c', '93')
         
         self.endFun()
         self.inNatives = False 
