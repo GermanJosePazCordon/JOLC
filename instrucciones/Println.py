@@ -27,7 +27,7 @@ class Println(Instruccion):
                 gen.printFalse()
                 gen.addLabel(tempLbl)
             elif value.tipo == tipos.CADENA:
-                gen.fPrintString()
+                gen.printString()
                 tmp = gen.addTemp()
                 gen.addExp(tmp, "P", "+", table.size)
                 gen.addExp(tmp, tmp, "+", "1")
@@ -42,11 +42,11 @@ class Println(Instruccion):
                 inicio = gen.addTemp()
                 gen.addExp(inicio, value.value, "+", "1")
                 gen.addPrint("c", 91)
-                self.printVector(inicio, size, value.vector[0])
+                self.printVector(tree, table, inicio, size, value.vector[0])
                 gen.addPrint("c", 93)
         gen.addPrint("c", 10)
  
-    def printVector(self, inicio, size, vector):
+    def printVector(self, tree, table, inicio, size, vector):
         genAux = C3D()
         gen = genAux.getInstance()
         
@@ -73,7 +73,7 @@ class Println(Instruccion):
          
             gen.getHeap(size, tmp)
             gen.addExp(inicio, tmp, "+", "1")
-            self.printVector(inicio, size, vector[0])  
+            self.printVector(tree, table, inicio, size, vector[0])  
             
             
             gen.addExp(size, tmpS, '', '')
@@ -86,6 +86,16 @@ class Println(Instruccion):
                 gen.printFloat("g", tmp)
             elif vector == tipos.CARACTER: 
                 gen.addPrint("c", tmp) 
+            elif vector == tipos.CADENA:
+                gen.printString()
+                tmp2 = gen.addTemp()
+                gen.addExp(tmp2, "P", "+", table.size)
+                gen.addExp(tmp2, tmp2, "+", "1")
+                gen.setStack(tmp2, tmp)
+                gen.newTable(table.size)
+                gen.callFun("printString")
+                gen.getStack(gen.addTemp(), "P")
+                gen.getTable(table.size)
             
         gen.addExp(inicio, inicio, "+", "1")
         gen.addExp(size, size, "-", "1")

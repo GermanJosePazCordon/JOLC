@@ -17,7 +17,7 @@ class C3D:
         self.imports = '\n\t"fmt";'
         self.imath = False
         #-----------------------
-        self.printString = False
+        self.BprintString = False
         self.BconcatString = False
         self.Bpotencia = False
         self.BpotenciaString = False
@@ -151,10 +151,10 @@ class C3D:
         self.addPrint("c", 115)
         self.addPrint("c", 101)
     
-    def fPrintString(self):
-        if self.printString:
+    def printString(self):
+        if self.BprintString:
             return
-        self.printString = True
+        self.BprintString = True
         self.inNatives = True
 
         self.initFun("printString")
