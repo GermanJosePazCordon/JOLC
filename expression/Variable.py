@@ -25,7 +25,10 @@ class Variable(Instruccion):
             gen.addExp(tempPos, "P",'+', variable.pos)
         gen.getStack(temp, tempPos)
         if variable.tipo != tipos.BOOLEAN:
-            return Retornar(temp, variable.tipo, True)
+            if variable.vector != '':
+                return Retornar(temp, variable.tipo, True, variable.vector)
+            else:
+                return Retornar(temp, variable.tipo, True, variable.vector)
         if self.ev == '':
             self.ev = gen.newLabel()
         if self.ef == '':

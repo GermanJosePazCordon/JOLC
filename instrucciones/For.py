@@ -146,7 +146,16 @@ class For(Instruccion):
         
     
     def vector(self, tree, table):
-        pass
+        genAux = C3D()
+        gen = genAux.getInstance()
+        
+        vector = self.cadena.interpretar(tree, table)
+        
+        if vector.tipo != tipos.VECTOR:
+            #Error
+            print("Tipo incorrecto vector invalido")
+            return
+    
     
     def getNodo(self):
         pass

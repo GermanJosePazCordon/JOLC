@@ -682,8 +682,6 @@ def p_tipo(t):
     elif t[1] == 'String':  t[0] = tipos.CADENA
     elif t[1] == 'nothing': t[0] = tipos.NULO
  
-    
-    
 import ply.yacc as yacc
 parser = yacc.yacc()
 

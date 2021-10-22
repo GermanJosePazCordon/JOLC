@@ -46,16 +46,58 @@ class AccesoVector(Instruccion):
             print("No existe la variable")
             return
         
-        gen.addExp(tmpP, variable.pos, '', '')
+        types = self.verifyTipo(variable.vector, len(pos))
+        
+        gen.getStack(tmpP, variable.pos)
+        
+        
+        error = gen.newLabel()
+        salida2 = gen.newLabel()
         
         for i in pos:
+            condicional = gen.newLabel()
             gen.getHeap(size, tmpP)
             gen.addExp(posHeap, i, '', '')
+            
+            gen.newIF(posHeap, '>', size, error)
+            gen.newIF(posHeap, '<', '1', error)
+            gen.addGoto(condicional)
+            
+            gen.addLabel(condicional)
             gen.addExp(tmpH, tmpP, '+', posHeap) 
             gen.getHeap(tmpP, tmpH)
+        gen.addGoto(salida2)
+            
+        gen.addLabel(error)
+        gen.addPrint("c", 66)
+        gen.addPrint("c", 111)
+        gen.addPrint("c", 117)
+        gen.addPrint("c", 110)
+        gen.addPrint("c", 100)
+        gen.addPrint("c", 115)
+        gen.addPrint("c", 69)
+        gen.addPrint("c", 114)
+        gen.addPrint("c", 114)
+        gen.addPrint("c", 111)
+        gen.addPrint("c", 114)
+        gen.addPrint("c", 10)
+        gen.addExp(tmpP, 0, '', '')
+        gen.addGoto(salida2)
         
-        return Retornar(tmpP, tipos.ENTERO, True)
+        gen.addLabel(salida2)
+        return Retornar(tmpP, types[0], True, types[1])
         
+    def verifyTipo(self, vector, lvl):
+        if lvl == 0:
+            if type(vector) is list:
+                tipo = tipos.VECTOR
+                tmp = [tipo, vector]
+            else:
+                tipo = vector
+                tmp = [tipo, vector]
+        else:
+            tmp = self.verifyTipo(vector[0], (lvl - 1))
+        return tmp
     
     def getNodo(self):
         pass

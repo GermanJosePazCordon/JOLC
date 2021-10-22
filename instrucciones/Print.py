@@ -17,7 +17,7 @@ class Print(Instruccion):
             elif value.tipo == tipos.DECIMAL:
                 gen.printFloat("g", value.value)
             elif value.tipo == tipos.CARACTER:
-                gen.addPrint("c", ord(value.value))
+                gen.addPrint("c", value.value)
             elif value.tipo == tipos.BOOLEAN:
                 tempLbl = gen.newLabel()
                 gen.addLabel(value.ev)
@@ -36,8 +36,62 @@ class Print(Instruccion):
                 gen.callFun("printString")
                 gen.getStack(gen.addTemp(), "P")
                 gen.getTable(table.size)
-            else:
-                print("POR HACER")
+            elif value.tipo == tipos.VECTOR:
+                size = gen.addTemp()
+                gen.getHeap(size, value.value)
+                inicio = gen.addTemp()
+                gen.addExp(inicio, value.value, "+", "1")
+                gen.addPrint("c", 91)
+                self.printVector(inicio, size, value.vector[0])
+                gen.addPrint("c", 93)
+    
+    def printVector(self, inicio, size, vector):
+        genAux = C3D()
+        gen = genAux.getInstance()
+        
+        continuando = gen.newLabel()
+        elemento = gen.newLabel()
+        salida = gen.newLabel()
+             
+        gen.addGoto(elemento)
+        gen.addLabel(continuando)
+        gen.newIF(size, "==", "0", salida)
+          
+        gen.addPrint("c", 44)
+        gen.addLabel(elemento)
+        
+        tmp = gen.addTemp()
+        gen.getHeap(tmp, inicio)
+        if type(vector) is list:   
+            gen.addPrint("c", 91)
+            
+            tmpS = gen.addTemp()
+            tmpI = gen.addTemp()
+            gen.addExp(tmpS, size, '', '')
+            gen.addExp(tmpI, inicio, '', '')
+         
+            gen.getHeap(size, tmp)
+            gen.addExp(inicio, tmp, "+", "1")
+            self.printVector(inicio, size, vector[0])  
+            
+            
+            gen.addExp(size, tmpS, '', '')
+            gen.addExp(inicio, tmpI, '', '')
+            gen.addPrint("c", 93)
+        else:
+            if vector == tipos.ENTERO:
+                gen.addPrint("d", tmp)
+            elif vector == tipos.DECIMAL:
+                gen.printFloat("g", tmp)
+            elif vector == tipos.CARACTER: 
+                gen.addPrint("c", tmp) 
+            
+        gen.addExp(inicio, inicio, "+", "1")
+        gen.addExp(size, size, "-", "1")
+        
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+    
         
     def getNodo(self):
         pass
