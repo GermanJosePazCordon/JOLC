@@ -27,9 +27,11 @@ class For(Instruccion):
         if self.types == "rango":
             self.rango(tree, table)
         elif self.types == "cadena":
-            self.cadenas(tree, table)
-        else:
-            self.vector(tree, table)
+            value = self.cadena.interpretar(tree, table)
+            if value.tipo == tipos.CADENA:
+                self.cadenas(tree, table, value)
+            else:
+                self.vector(tree, table, value)
         return
         
     
@@ -80,6 +82,7 @@ class For(Instruccion):
         for i in self.listaInstrucciones:
             i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
         
+        gen.addGoto(iterador)
         gen.addLabel(iterador)
         gen.addExp(declara, declara, "+", "1")
         gen.setStack(tmpP, declara)
@@ -87,11 +90,9 @@ class For(Instruccion):
         gen.addGoto(continuando) 
         gen.addLabel(salida)
     
-    def cadenas(self, tree, table):
+    def cadenas(self, tree, table, cadena):
         genAux = C3D()
         gen = genAux.getInstance()
-        
-        cadena = self.cadena.interpretar(tree, table)
         
         if cadena.tipo != tipos.CADENA:
             #Error
@@ -102,18 +103,15 @@ class For(Instruccion):
         
         variable = tabla.getVariable(self.variable)
         if variable is None:
-            value = Primitiva(tipos.CADENA, "X", self.line, self.column)
+            value = Primitiva(tipos.CARACTER, 'A', self.line, self.column)
             declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
             declara.interpretar(tree, tabla)
         
         tmpP = gen.addTemp()
         tmpH = gen.addTemp()
-        gen.addExp('H', '0', '', '')
-        gen.addExp(tmpH, 'H', '', '')
+        gen.addExp(tmpH, cadena.value, '', '')
         gen.addExp(tmpP, 'P', '', '')
         
-        
-        condicional = gen.newLabel()
         salida = gen.newLabel()
         continuando = gen.newLabel()
         iterador = gen.newLabel()
@@ -125,16 +123,13 @@ class For(Instruccion):
         tabla.breakk = salida
         tabla.continuee = iterador
         
-        gen.newIF(tmp, "!=", "-1", condicional)
-        gen.addGoto(salida)
-        gen.addLabel(condicional)
+        gen.newIF(tmp, "==", "-1", salida)
         #------------------------------------
         variable = tabla.getVariable(self.variable)
-        var = gen.addTemp() 
-        gen.getStack(var, variable.pos)
-        gen.setHeap(var, tmp)
+        gen.setStack(variable.pos, tmp)
         for i in self.listaInstrucciones:
             i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            
         gen.addGoto(iterador)
         gen.addLabel(iterador)
         gen.addExp(tmpH, tmpH, "+", "1")
@@ -142,21 +137,64 @@ class For(Instruccion):
         gen.addGoto(continuando)
         gen.addLabel(salida)
         
-        
-        
     
-    def vector(self, tree, table):
+    def vector(self, tree, table, vector):
         genAux = C3D()
         gen = genAux.getInstance()
-        
-        vector = self.cadena.interpretar(tree, table)
         
         if vector.tipo != tipos.VECTOR:
             #Error
             print("Tipo incorrecto vector invalido")
             return
-    
-    
+
+        tabla = Entorno(table) #Nueva tabla
+        
+        variable = tabla.getVariable(self.variable)
+        if variable is None:
+            if type(vector.vector[0]) is list:
+                tipo = tipos.VECTOR
+            else:
+                tipo = vector.vector[0]
+            value = Primitiva(tipos.ENTERO, 0, self.line, self.column)
+            declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
+            declara.interpretar(tree, tabla)
+            variable = tabla.getVariable(self.variable)
+            variable.tipo = tipo
+            variable.vector = vector.vector[0]
+            
+        size = gen.addTemp()
+        gen.getHeap(size, vector.value)
+        inicio = gen.addTemp()
+        gen.addExp(inicio, vector.value, "+", "1")
+        
+        continuando = gen.newLabel()
+        salida = gen.newLabel()
+        iterador = gen.newLabel()
+             
+        gen.addLabel(continuando)
+        
+        tabla.breakk = salida
+        tabla.continuee = iterador
+        
+        gen.newIF(size, "==", "0", salida)
+        
+        tmp = gen.addTemp()
+        gen.getHeap(tmp, inicio)
+        
+        variable = tabla.getVariable(self.variable)
+        gen.setStack(variable.pos, tmp)
+        
+        for i in self.listaInstrucciones:
+            i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+        
+        gen.addGoto(iterador)
+        gen.addLabel(iterador)
+        gen.addExp(inicio, inicio, "+", "1")
+        gen.addExp(size, size, "-", "1")
+        
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+        
     def getNodo(self):
         pass
     
