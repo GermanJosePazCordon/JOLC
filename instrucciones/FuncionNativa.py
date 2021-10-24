@@ -16,7 +16,6 @@ class FuncionNativa(Instruccion):
         self.funcion = funcion
     
     def interpretar(self, tree, table):
-        
         value = self.expresion.interpretar(tree, table)
         if self.funcion == 'float':
             genAux = C3D()
@@ -28,17 +27,7 @@ class FuncionNativa(Instruccion):
                 #Error
                 return
         elif self.funcion == 'string':
-            self.tipo = tipos.CADENA
-            if value.tipo == tipos.VECTOR:
-                return self.retorno(self.getArreglo(tree, table, value.value))
-            return self.retorno(str(value.value))
-        elif self.funcion == 'typeof':
-            self.tipo = tipos.CADENA
-            tmp = self.getType(value)
-            if tmp == "Tipo no definido":
-                #Error
-                return
-            return self.retorno(tmp)
+            pass
         elif self.funcion == 'parse':
             if self.tipo == tipos.ENTERO: #and value.tipo == tipos.CADENA:
                 self.tipo = tipos.ENTERO
@@ -50,12 +39,22 @@ class FuncionNativa(Instruccion):
                 #Error
                 return
         elif self.funcion == 'trunc':
-            if self.tipo is None:
+            if value.tipo == tipos.DECIMAL:
                 self.tipo = tipos.ENTERO
-                return self.retorno(int(value.value)) 
-            elif self.tipo == tipos.ENTERO and value.tipo == tipos.DECIMAL:
-                self.tipo = tipos.ENTERO
-                return self.retorno(int(value.value))
+                genAux = C3D()
+                gen = genAux.getInstance()
+                if gen.imath == False:
+                        gen.imports += ';\n\t"math"'
+                        gen.imath = True        
+                tmp = gen.addTemp()
+                gen.addExp(tmp, "math.Mod(" + value.value + "," + "1" + ")", '', '')
+                res = gen.addTemp()
+                gen.addExp(res, value.value, '-', tmp)
+                salida = gen.newLabel()
+                gen.newIF(value.value, ">=", 0, salida)
+                gen.addExp(res, res, '+', 1)
+                gen.addLabel(salida)
+                return Retornar(res, tipos.ENTERO, True)
             else:
                 #Error
                 return  
@@ -73,11 +72,7 @@ class FuncionNativa(Instruccion):
         else:
             #Error
                 return
-            
-    
-    def retorno(self, result):
-        return Primitiva(self.tipo, str(result), self.line, self.column)
-    
+              
     def parseInt(self, tree, table, value):
         genAux = C3D()
         gen = genAux.getInstance()
@@ -243,46 +238,6 @@ class FuncionNativa(Instruccion):
         gen.addLabel(salida)
         
         return Retornar(suma, tipos.DECIMAL, True)
-    
-    def getType(self, value):
-        if value.tipo == tipos.ENTERO:
-            return "Int64"
-        elif value.tipo == tipos.DECIMAL:
-            return "Float64"
-        elif value.tipo == tipos.CADENA:
-            return "String"
-        elif value.tipo == tipos.BOOLEAN:
-            return "Bool"
-        elif value.tipo == tipos.CARACTER:
-            return "Char"
-        elif value.tipo == tipos.VECTOR:
-            return "Arreglo"
-        elif value.tipo == tipos.STRUCT:
-            return "Struct"
-        elif value.tipo == tipos.FUNCION:
-            return "Funcion"
-        elif value.tipo == tipos.NULO:
-            return "Nothing"
-        else:
-            return "Tipo no definido"
-        
-    def getArreglo(self, tree, table, vector):
-        res = "["
-        for i in vector:
-            if(i == "[" or i == "]"):
-                res += i
-                continue
-            tmp = i.interpretar(tree, table)
-            if isinstance(tmp, Excepciones):
-                tree.updateConsola(tmp.show())
-                return
-            if tmp.tipo == tipos.VECTOR:
-                res += self.getArreglo(tree, table, tmp.value) + ","
-            else:
-                res += str(tmp.value) + ","
-        res = res[:-1]
-        res += "]"
-        return str(res)
-    
+
     def getNodo(self):
         pass

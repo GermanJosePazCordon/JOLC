@@ -241,7 +241,7 @@ class Aritmetica(Instruccion):
                     '''tmp = gen.addTemp()
                     gen.addExp(tmp, "math.Pow(" + left + "," + right + ")", '', '')
                     if gen.imath == False:
-                        gen.imports += '\n\t"math";'
+                        gen.imports += ';\n\t"math"'
                         gen.imath = True
                     return Retornar(tmp, p1.tipo, True)'''
                     gen.potencia()
@@ -301,7 +301,7 @@ class Aritmetica(Instruccion):
                     else: 
                         self.tipo = tipos.DECIMAL
                     if gen.imath == False:
-                        gen.imports += '\n\t"math";'
+                        gen.imports += ';\n\t"math"'
                         gen.imath = True
                     izq = gen.addTemp()
                     der = gen.addTemp()

@@ -14,7 +14,7 @@ class C3D:
         self.inNatives = False
         self.temps = []
         #-----------------------
-        self.imports = '\n\t"fmt";'
+        self.imports = '\n\t"fmt"'
         self.imath = False
         #-----------------------
         self.BprintString = False
@@ -43,7 +43,7 @@ class C3D:
     def getHeader(self):
         ret = 'package main;\n\nimport ('
         ret += self.imports 
-        ret += '\n)\n\n'
+        ret += '\n);\n\n'
         if len(self.temps) > 0:
             ret += 'var '
             for temp in range(len(self.temps)):
@@ -136,7 +136,7 @@ class C3D:
         self.codeIn(f'fmt.Printf("%{type}", int({value}));\n')
         
     def printFloat(self, type, value):
-        self.codeIn(f'fmt.Printf("%f", float64({value}));\n')
+        self.codeIn(f'fmt.Printf("%f", {value});\n')
     
     def printTrue(self):
         self.addPrint("c", 116)
