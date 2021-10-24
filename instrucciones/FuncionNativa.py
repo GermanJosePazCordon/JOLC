@@ -1,7 +1,7 @@
-
-from abstract.NodoAST import NodoAST
 from abstract.Instruccion import Instruccion
 from tablaSimbolos.Tipo import tipos
+from tablaSimbolos.C3D import C3D
+from abstract.Retorno import Retornar
 from expression.Primitiva import Primitiva
 from excepciones.Excepciones import Excepciones
 
@@ -16,91 +16,252 @@ class FuncionNativa(Instruccion):
         self.funcion = funcion
     
     def interpretar(self, tree, table):
-        valor = self.expresion.interpretar(tree, table)
-        if isinstance(valor, Excepciones): return valor
+        
+        value = self.expresion.interpretar(tree, table)
         if self.funcion == 'float':
-            if valor.tipo == tipos.ENTERO:
+            genAux = C3D()
+            gen = genAux.getInstance()
+            if value.tipo == tipos.ENTERO:
                 self.tipo = tipos.DECIMAL
-                return self.retorno(float(valor.value))
+                return Retornar(value.value, tipos.DECIMAL, True)
             else:
-                tree.addError(Excepciones("Semántico", "Tipo incorrecto para la funcion float", self.line, self.column))
-                return Excepciones("Semantico", "Tipo incorrecto para la funcion float", self.line, self.column)
+                #Error
+                return
         elif self.funcion == 'string':
             self.tipo = tipos.CADENA
-            if valor.tipo == tipos.VECTOR:
-                return self.retorno(self.getArreglo(tree, table, valor.value))
-            return self.retorno(str(valor.value))
+            if value.tipo == tipos.VECTOR:
+                return self.retorno(self.getArreglo(tree, table, value.value))
+            return self.retorno(str(value.value))
         elif self.funcion == 'typeof':
             self.tipo = tipos.CADENA
-            tmp = self.getType(valor)
+            tmp = self.getType(value)
             if tmp == "Tipo no definido":
-                tree.addError(Excepciones("Semántico", "Tipo no definido", self.line, self.column))
-                return Excepciones("Semantico", "Tipo no definido", self.line, self.column)
+                #Error
+                return
             return self.retorno(tmp)
         elif self.funcion == 'parse':
-            if self.tipo == tipos.ENTERO: #and valor.tipo == tipos.CADENA:
+            if self.tipo == tipos.ENTERO: #and value.tipo == tipos.CADENA:
                 self.tipo = tipos.ENTERO
-                return self.retorno(int(float(valor.value)))
-            elif self.tipo == tipos.DECIMAL: #and valor.tipo == tipos.CADENA:
+                return self.parseInt(tree, table, value)
+            elif self.tipo == tipos.DECIMAL: #and value.tipo == tipos.CADENA:
                 self.tipo = tipos.DECIMAL
-                return self.retorno(float(valor.value))
+                return self.parseFloat(tree, table, value)
             else:
-                tree.addError(Excepciones("Semántico", "Tipo incorrecto para la funcion parse", self.line, self.column))
-                return Excepciones("Semantico", "Tipo incorrecto para la funcion parse", self.line, self.column)
+                #Error
+                return
         elif self.funcion == 'trunc':
             if self.tipo is None:
                 self.tipo = tipos.ENTERO
-                return self.retorno(int(valor.value)) 
-            elif self.tipo == tipos.ENTERO and valor.tipo == tipos.DECIMAL:
+                return self.retorno(int(value.value)) 
+            elif self.tipo == tipos.ENTERO and value.tipo == tipos.DECIMAL:
                 self.tipo = tipos.ENTERO
-                return self.retorno(int(valor.value))
+                return self.retorno(int(value.value))
             else:
-                tree.addError(Excepciones("Semántico", "Tipo incorrecto para la funcion trunc", self.line, self.column))
-                return Excepciones("Semantico", "Tipo incorrecto para la funcion trunc", self.line, self.column)    
+                #Error
+                return  
         elif self.funcion == 'length':
-            if valor.tipo == tipos.VECTOR:
+            genAux = C3D()
+            gen = genAux.getInstance()
+            if value.tipo == tipos.VECTOR:
                 self.tipo = tipos.ENTERO
-                return self.retorno(len(valor.value))
+                tmp =  gen.addTemp()
+                gen.getHeap(tmp, value.value)
+                return Retornar(tmp, tipos.ENTERO, True)
             else:
-                tree.addError(Excepciones("Semántico", "Tipo incorrecto para la funcion length", self.line, self.column))
-                return Excepciones("Semantico", "Tipo incorrecto para la funcion length", self.line, self.column) 
-        elif self.funcion == 'pop':
-            if valor.tipo == tipos.VECTOR:
-                tmp = valor.value.pop()
-                self.tipo = tmp.tipo
-                if tmp.tipo == tipos.VECTOR:
-                    self.tipo = tipos.CADENA
-                    return self.retorno(self.getArreglo(tree, table, tmp.value))
-                return self.retorno((tmp.value))
-            else:
-                tree.addError(Excepciones("Semántico", "Tipo incorrecto para la funcion pop", self.line, self.column))
-                return Excepciones("Semantico", "Tipo incorrecto para la funcion pop", self.line, self.column)  
+                #Error
+                return
         else:
-            tree.addError(Excepciones("Semántico", "Tipo de funcion nativa incorrecto", self.line, self.column))
-            return Excepciones("Semantico", "Tipo de funcion nativa incorrecto", self.line, self.column)
+            #Error
+                return
             
     
     def retorno(self, result):
         return Primitiva(self.tipo, str(result), self.line, self.column)
     
-    def getType(self, valor):
-        if valor.tipo == tipos.ENTERO:
+    def parseInt(self, tree, table, value):
+        genAux = C3D()
+        gen = genAux.getInstance()
+        
+        tmpH = gen.addTemp()
+        gen.addExp(tmpH, value.value, '', '')
+        
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        
+        entero = gen.addTemp()
+        gen.addExp(entero, "0", '-', '1')
+        
+        num = gen.addTemp()
+        suma = gen.addTemp()
+        multi = gen.addTemp()
+        unidad = gen.addTemp()
+        
+        #-------------------------------------CONTANDO CANTIDAD DE ENTEROS
+        gen.addLabel(continuando)
+        gen.getHeap(num, tmpH)
+        gen.newIF(num, "==", "-1", salida)
+        gen.newIF(num, "==", "46", salida)   
+        gen.addExp(entero, entero, '+', '1')
+        gen.addExp(tmpH, tmpH, "+", "1")
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+        #--------------------------------
+        
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        gen.addExp(tmpH, value.value, '', '')
+        
+        gen.addLabel(continuando)
+        gen.getHeap(num, tmpH)
+        gen.newIF(num, "==", "-1", salida)
+        gen.newIF(num, "==", "46", salida)   
+        
+        #----------------------------------- OBTENIENDO LA UNIDAD: UNIDAD DECENA CENTENA MILLAR ...
+        gen.potencia()
+        tmp = gen.addTemp()
+        gen.addExp(tmp, 'P', '+', table.size)
+        gen.addExp(tmp, tmp, "+", '1')
+        gen.setStack(tmp, 10)
+        gen.addExp(tmp, tmp, '+', '1')
+        gen.setStack(tmp, entero)
+        gen.newTable(table.size)
+        gen.callFun('potencia')
+        gen.getStack(unidad, 'P')
+        gen.getTable(table.size)
+        #-----------------------------------
+        gen.addExp(num, num, '-', 48)
+        gen.addExp(multi, num, '*', unidad)
+        gen.addExp(suma, suma, '+', multi)
+        
+        gen.addExp(entero, entero, '-', '1')
+        gen.addExp(tmpH, tmpH, "+", "1")
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+
+        
+        return Retornar(suma, tipos.ENTERO, True)
+    
+    def parseFloat(self, tree, table, value):
+        genAux = C3D()
+        gen = genAux.getInstance()
+        
+        tmpH = gen.addTemp()
+        gen.addExp(tmpH, value.value, '', '')
+        
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        
+        entero = gen.addTemp()
+        gen.addExp(entero, "0", '-', '1')
+        
+        decimal = gen.addTemp()
+        gen.addExp(decimal, "1", '', '')
+        
+        num = gen.addTemp()
+        suma = gen.addTemp()
+        multi = gen.addTemp()
+        unidad = gen.addTemp()
+        
+        #-------------------------------------CONTANDO CANTIDAD DE ENTEROS
+        gen.addLabel(continuando)
+        gen.getHeap(num, tmpH)
+        gen.newIF(num, "==", "-1", salida)
+        gen.newIF(num, "==", "46", salida)   
+        gen.addExp(entero, entero, '+', '1')
+        gen.addExp(tmpH, tmpH, "+", "1")
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+        #--------------------------------
+    
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        cambio = gen.newLabel()
+        gen.addExp(tmpH, value.value, '', '')
+        
+        gen.addLabel(continuando)
+        gen.getHeap(num, tmpH)
+        gen.newIF(num, "==", "-1", salida)
+        gen.newIF(num, "==", "46", cambio)   
+        
+        #----------------------------------- OBTENIENDO LA UNIDAD: UNIDAD DECENA CENTENA MILLAR ...
+        gen.potencia()
+        tmp = gen.addTemp()
+        gen.addExp(tmp, 'P', '+', table.size)
+        gen.addExp(tmp, tmp, "+", '1')
+        gen.setStack(tmp, 10)
+        gen.addExp(tmp, tmp, '+', '1')
+        gen.setStack(tmp, entero)
+        gen.newTable(table.size)
+        gen.callFun('potencia')
+        gen.getStack(unidad, 'P')
+        gen.getTable(table.size)
+        #-----------------------------------
+        
+        gen.addExp(num, num, '-', 48)
+        gen.addExp(multi, num, '*', unidad)
+        gen.addExp(suma, suma, '+', multi)
+        
+        gen.addExp(entero, entero, '-', '1')
+        gen.addExp(tmpH, tmpH, "+", "1")
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+        
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        gen.addExp(decimal, "0", '', '')
+        gen.addLabel(cambio)
+        
+        gen.getHeap(num, tmpH)
+        gen.newIF(num, "==", "-1", salida) 
+        
+        gen.addExp(tmpH, tmpH, "+", "1")
+        gen.addLabel(continuando)
+        gen.getHeap(num, tmpH)
+        gen.newIF(num, "==", "-1", salida) 
+        #----------------------------------- OBTENIENDO LA UNIDAD: UNIDAD DECENA CENTENA MILLAR ...
+        gen.potencia()
+        tmp = gen.addTemp()
+        gen.addExp(tmp, 'P', '+', table.size)
+        gen.addExp(tmp, tmp, "+", '1')
+        gen.setStack(tmp, 10)
+        gen.addExp(tmp, tmp, '+', '1')
+        gen.setStack(tmp, decimal)
+        gen.newTable(table.size)
+        gen.callFun('potencia')
+        gen.getStack(unidad, 'P')
+        gen.getTable(table.size)
+        #-----------------------------------
+        
+        gen.addExp(num, num, '-', 48)
+        gen.addExp(unidad, 1, '/', unidad)
+        gen.addExp(multi, num, '*', unidad)
+        gen.addExp(suma, suma, '+', multi)
+        
+        gen.addExp(decimal, decimal, '+', '1')
+        gen.addExp(tmpH, tmpH, "+", "1")
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+        
+        return Retornar(suma, tipos.DECIMAL, True)
+    
+    def getType(self, value):
+        if value.tipo == tipos.ENTERO:
             return "Int64"
-        elif valor.tipo == tipos.DECIMAL:
+        elif value.tipo == tipos.DECIMAL:
             return "Float64"
-        elif valor.tipo == tipos.CADENA:
+        elif value.tipo == tipos.CADENA:
             return "String"
-        elif valor.tipo == tipos.BOOLEAN:
+        elif value.tipo == tipos.BOOLEAN:
             return "Bool"
-        elif valor.tipo == tipos.CARACTER:
+        elif value.tipo == tipos.CARACTER:
             return "Char"
-        elif valor.tipo == tipos.VECTOR:
+        elif value.tipo == tipos.VECTOR:
             return "Arreglo"
-        elif valor.tipo == tipos.STRUCT:
+        elif value.tipo == tipos.STRUCT:
             return "Struct"
-        elif valor.tipo == tipos.FUNCION:
+        elif value.tipo == tipos.FUNCION:
             return "Funcion"
-        elif valor.tipo == tipos.NULO:
+        elif value.tipo == tipos.NULO:
             return "Nothing"
         else:
             return "Tipo no definido"
@@ -124,18 +285,4 @@ class FuncionNativa(Instruccion):
         return str(res)
     
     def getNodo(self):
-        nodo = NodoAST("FUNCION NATIVA")
-        nodo.agregarHijo(self.funcion)
-        if self.funcion == 'pop':
-            nodo.agregarHijo("!")
-        nodo.agregarHijo("(")
-        if self.funcion == "parse" or self.funcion == "trunc":
-            if self.tipo is not None:
-                nodo.agregarHijo(self.tipo.name)
-                nodo.agregarHijo(",")
-        
-        nodo2 = NodoAST("EXPRESION")
-        nodo2.agregarHijoNodo(self.expresion.getNodo())
-        nodo.agregarHijoNodo(nodo2)
-        nodo.agregarHijo(")")
-        return nodo
+        pass

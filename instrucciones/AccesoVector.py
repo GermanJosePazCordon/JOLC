@@ -20,6 +20,8 @@ class AccesoVector(Instruccion):
     def interpretar(self, tree, table):
         if self.type == 'pos':
             return self.porPos(tree, table)
+        else:
+            return self.porRango(tree, table)
         
     def porPos(self, tree, table):
         pos = []
@@ -86,7 +88,70 @@ class AccesoVector(Instruccion):
         
         gen.addLabel(salida2)
         return Retornar(tmpP, types[0], True, types[1])
+      
+    def porRango(self, tree, table):
+        genAux = C3D()
+        gen = genAux.getInstance()
         
+        ri = self.rangoinf.interpretar(tree, table)
+        ru = self.rangosup.interpretar(tree, table)
+        if ri.tipo != tipos.ENTERO and ri.tipo != tipos.DECIMAL:
+            #Error
+            print("Tipo incorrecto rango inferior")
+            return
+        if ru.tipo != tipos.ENTERO and ru.tipo != tipos.DECIMAL:
+            #Error
+            print("Tipo incorrecto rango superior")
+            return
+        
+        variable = table.getVariable(self.id)
+        if variable is None:
+            #Error
+            print("No existe la variable")
+            return
+        
+        tmpP = gen.addTemp() 
+        size = gen.addTemp()
+        posHeap = gen.addTemp()
+        tmpH = gen.addTemp()
+        
+        salida = gen.newLabel()
+        continuando = gen.newLabel()
+        
+        gen.addExp(size, ru.value, "-", ri.value)
+        gen.addExp(size, size, "+", "1")
+        
+        gen.addExp(posHeap, ri.value, '', '')
+        gen.getStack(tmpP, variable.pos)
+        gen.addExp(tmpH, tmpP, '+', posHeap)
+        
+
+        
+        tmpH2 = gen.addTemp()
+        gen.addExp(tmpH2, 'H', '', '')
+        tmp = gen.addTemp()
+        gen.addExp(tmp, tmpH2, "+", 1)
+        
+        gen.setHeap('H', len(self.value))
+        size = len(self.value) + 1
+        gen.addExp('H', 'H', '+', size)
+        
+        
+        
+        gen.addLabel(continuando)
+        gen.newIF(size, "==", "0", salida)
+        #----------------------------------
+        
+        #----------------------------------
+        
+        gen.addExp(size, size, "-", "1")
+        gen.addExp(tmpH, tmpH, '+', "1")
+        gen.addGoto(continuando)
+        gen.addLabel(salida)
+        
+        value = Primitiva(tipos.VECTOR, 's', self.line, self.column)
+        return Retornar(value, tipos.VECTOR, True, [variable.vector])
+      
     def verifyTipo(self, vector, lvl):
         if lvl == 0:
             if type(vector) is list:

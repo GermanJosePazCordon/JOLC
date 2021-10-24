@@ -136,7 +136,7 @@ class C3D:
         self.codeIn(f'fmt.Printf("%{type}", int({value}));\n')
         
     def printFloat(self, type, value):
-        self.codeIn(f'fmt.Printf("%{type}", float64({value}));\n')
+        self.codeIn(f'fmt.Printf("%f", float64({value}));\n')
     
     def printTrue(self):
         self.addPrint("c", 116)

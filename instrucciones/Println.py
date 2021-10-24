@@ -15,7 +15,7 @@ class Println(Instruccion):
             if value.tipo == tipos.ENTERO:
                 gen.addPrint("d", value.value)
             elif value.tipo == tipos.DECIMAL:
-                gen.printFloat("g", value.value)
+                gen.printFloat("f", value.value)
             elif value.tipo == tipos.CARACTER:
                 gen.addPrint("c", value.value)
             elif value.tipo == tipos.BOOLEAN:
