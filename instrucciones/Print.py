@@ -74,7 +74,6 @@ class Print(Instruccion):
             gen.addExp(inicio, tmp, "+", "1")
             self.printVector(tree, table, inicio, size, vector[0])  
             
-            
             gen.addExp(size, tmpS, '', '')
             gen.addExp(inicio, tmpI, '', '')
             gen.addPrint("c", 93)

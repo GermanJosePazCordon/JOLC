@@ -1,13 +1,10 @@
-
-from abstract.NodoAST import NodoAST
-from instrucciones.Return import Return
-from expression.Primitiva import Primitiva
-from tablaSimbolos.TablaSimbolos import tablaSimbolos
-from tablaSimbolos.Simbolo import Simbolo
 from abstract.Instruccion import Instruccion
+from instrucciones.Return import Return
+from abstract.Retorno import Retornar
+from tablaSimbolos.C3D import C3D
+from tablaSimbolos.Entorno import Entorno
+from tablaSimbolos.Simbolo import Simbolo
 from tablaSimbolos.Tipo import tipos
-from excepciones.Excepciones import Excepciones
-from instrucciones.ConstruccionStruct import ConstruccionStruct
 
 class Llamada(Instruccion):
     def __init__(self, ids, listaParametros, line, column):
@@ -18,87 +15,84 @@ class Llamada(Instruccion):
         self.listaParametros = listaParametros
     
     def interpretar(self, tree, table):
-        isFunction = True
         if self.listaParametros is None:
             self.listaParametros = []
-        funcion = table.getVariable(self.id)
+        funcion = table.getFuncion(self.id)
         if funcion is None:
-            tree.addError(Excepciones("Semántico", "Funcion no declarada", self.line, self.column))
-            return Excepciones("Semantico", "Funcion no decladara", self.line, self.column)
+            #Error
+            print("No existe la funcion")
+            return
         if funcion.tipo == tipos.FUNCION:
-            isFunction = True
+            return self.isFuncion(tree, table, funcion)
         elif funcion.tipo == tipos.STRUCT:
-            isFunction = False
+            return self.isStruct(tree, table, funcion)
         else:
-            tree.addError(Excepciones("Semántico", "El id no es de una funcion", self.line, self.column))
-            return Excepciones("Semantico", "El id no es de una funcion", self.line, self.column)
-        self.isFun = isFunction
-        self.Func = funcion
-        if isFunction:
-            #METODO PARA FUNCIONES
-            parametrosFun = funcion.value['parametros']
-            instruccionesFun = funcion.value['instrucciones']
-            if len(self.listaParametros) != len(parametrosFun):
-                tree.addError(Excepciones("Semántico", "Numero de parametros incorrecto", self.line, self.column))
-                return Excepciones("Semantico", "Numero de parametros incorrecto", self.line, self.column)
+            #Error
+            print("El id no es de una funcion o un struct")
+            return
+        
+    def isFuncion(self, tree, table, funcion):
+        parametrosFun = funcion.listaParametros
+        instruccionesFun = funcion.listaInstrucciones
+        if len(self.listaParametros) != len(parametrosFun):
+            #Error
+            print("Numero de parametros incorrecto")
+            return
+        #-----------------------------------------------------------------
+        parametrosLlamada = []
+        size = table.size
+        for i in self.listaParametros:
+            parametrosLlamada.append(i.id.interpretar(tree, table))
+        #---------------------------------------------------------------
+        genAux = C3D()
+        gen = genAux.getInstance()
+        
+        
+        if funcion.Bfuncion is False:
+            #DECLARANDO LA FUNCION CON SUS PARAMETROS
+            tabla = Entorno(table)
+            returnn = gen.newLabel()
+            tabla.returnn = returnn
+            tabla.size = 1
+            cont = 0
             
-            #CRENADO EL ENTORNO DE LA FUNCION
-            tabla = tablaSimbolos(table)
-            tabla.setEntorno(self.id)
-            tree.addTabla(tabla)
+            for i in parametrosFun:
+                if i.tipo is None:
+                    i.tipo = funcion.retorno
+                tabla.setVariable(i.id.id, i.tipo, (i.tipo == tipos.CADENA or i.tipo == tipos.STRUCT), parametrosLlamada[cont].vector)
+                cont += 1
+    
+            gen.initFun(self.id)
+            for i in instruccionesFun:
+                i.interpretar(tree, tabla)
+            gen.addLabel(returnn)
+            gen.endFun()
+            funcion.Bfuncion = True
+        
+        #EMPEZANDO LA LLAMADA
+        '''parametrosLlamada = []
+        size = table.size
+        for i in self.listaParametros:
+            parametrosLlamada.append(i.id.interpretar(tree, table))'''
             
-            for i in range(len(self.listaParametros)):
-                valor = self.listaParametros[i].interpretar(tree, table)
-                if isinstance(valor, Excepciones): return valor
-                tabla.setVariable(Simbolo(self.line, self.column, valor.tipo, parametrosFun[i].id, valor.value))
-            
-            for m in instruccionesFun:
-                if isinstance(m, Excepciones):
-                    tree.updateConsola(str(m))
-                    tree.addError(m.show())
-                    continue
-                result = m.interpretar(tree, tabla)
-                if isinstance(result, Excepciones): return result
-                if isinstance(result, Return):
-                    if result is None:
-                        return
-                    tmp = result.result.interpretar(tree, tabla)
-                    return tmp
-                if isinstance(result, Primitiva): return result
-        else:
-            #METODOS PARA STRUCTS
-            tmp = ConstruccionStruct(funcion, self.listaParametros, self.line, self.column)
-            self.nodoStruct = tmp.getNodo()
-            tmp = tmp.interpretar(tree, table)
-            
-            return tmp
+        tmp = gen.addTemp()
+        gen.addExp(tmp, 'P', '+', (size + 1))
+        cont = 0;
+        for i in parametrosLlamada:
+            cont += 1
+            gen.setStack(tmp, i.value)
+            if len(parametrosLlamada) != cont:
+                gen.addExp(tmp, tmp, '+', 1)
+        
+        gen.newTable(size)
+        gen.callFun(self.id)
+        gen.getStack(tmp, 'P')
+        gen.getTable(size)
+        
+        return Retornar(tmp, funcion.retorno, True)
+    
+    def isStruct(self, tree, table, struct):
+        pass
     
     def getNodo(self):
-        try:
-            if self.isFun is False:
-                return self.nodoStruct
-            nodo = NodoAST("LLAMADA")
-            nodo.agregarHijo(self.Func.id)
-            nodo.agregarHijo("(")
-            if self.listaParametros is not None:
-                nuevo = NodoAST("LISTAPARAMETROS")
-                one = True
-                for i in self.listaParametros:
-                    if one:
-                        nodo2 = NodoAST("EXPRESION")
-                        nodo2.agregarHijoNodo(i.getNodo())
-                        nuevo.agregarHijoNodo(nodo2)
-                        one = False
-                    else:
-                        tmp = nuevo
-                        nuevo2 = NodoAST("EXPRESION")
-                        nuevo = NodoAST("LISTAPARAMETROS")
-                        nuevo.agregarHijoNodo(tmp)
-                        nuevo.agregarHijo(",")
-                        nuevo2.agregarHijoNodo(i.getNodo())
-                        nuevo.agregarHijoNodo(nuevo2)
-                nodo.agregarHijoNodo(nuevo)
-            nodo.agregarHijo(")")
-            return nodo
-        except:
-            pass
+        pass

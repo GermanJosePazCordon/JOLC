@@ -42,12 +42,14 @@ class Entorno:
     def getVariable(self, varible):
         entorno = self
         while entorno != None:
+            tmp = entorno.variables.keys()
+            print(tmp)
             if varible in entorno.variables.keys():
                 return entorno.variables[varible]
             entorno = entorno.last
         return None
     
-    def getFunc(self, funcion):
+    def getFuncion(self, funcion):
         if funcion in self.functions.keys():
             return self.functions[funcion]
         else:

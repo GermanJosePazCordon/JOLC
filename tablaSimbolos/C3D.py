@@ -13,6 +13,8 @@ class C3D:
         self.inFunc = False
         self.inNatives = False
         self.temps = []
+        self.free = []
+        self.used = []
         #-----------------------
         self.imports = '\n\t"fmt"'
         self.imath = False
@@ -75,10 +77,19 @@ class C3D:
         return C3D.gen
     
     def addTemp(self):
+        if len(self.free) > 0:
+            temp = self.free.pop()
+            self.used.append(temp)
+            return temp
         temp = f't{self.countTemp}'
         self.countTemp += 1
         self.temps.append(temp)
+        self.used.append(temp)
         return temp
+
+    def deleteTemp(self, tmp):
+        self.used.remove(tmp)
+        self.free.append(tmp)
 
     def newLabel(self):
         label = f'L{self.countLabel}'
@@ -130,7 +141,7 @@ class C3D:
 
     def nextHeap(self):
         self.codeIn('H=H+1;\n')
-
+        
     # INSTRUCCIONES
     def addPrint(self, type, value):
         self.codeIn(f'fmt.Printf("%{type}", int({value}));\n')

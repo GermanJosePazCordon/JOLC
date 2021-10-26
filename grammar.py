@@ -33,6 +33,7 @@ from instrucciones.For import For
 from instrucciones.AccesoVector import AccesoVector
 from instrucciones.ModificarVector import ModificarVector
 from instrucciones.Funciones import Funciones
+from instrucciones.Parametro import Parametro
 from instrucciones.Llamada import Llamada
 from instrucciones.Structs import Structs
 from instrucciones.Atributo import Atributo
@@ -77,7 +78,8 @@ reservadas = {
     'Bool'      : 'RBOOL',
     'Char'      : 'RCHAR',
     'String'    : 'RSTRING',
-    'nothing'   : 'RNULO',
+    'Nothing'   : 'RNULO',
+    'Array'   : 'RARRAY',
     
     'uppercase' : 'UPPER',
     'lowercase' : 'LOWER',
@@ -415,29 +417,37 @@ def p_modificar_vector(t):
     
 def p_funciones(t):
     '''
-    FUNCIONES : FUNCTION ID PARIZQ LISTAPARAMETROS PARDER instrucciones END PTCOMA
-              | FUNCTION ID PARIZQ PARDER instrucciones END PTCOMA
+    FUNCIONES : FUNCTION ID PARIZQ LISTAPARAMETROS PARDER DBPUNTO tipo instrucciones END PTCOMA
+              | FUNCTION ID PARIZQ PARDER DBPUNTO tipo instrucciones END PTCOMA
     '''
-    if t[4] == ')' :  t[0] = Funciones(t[2], None, t[5], t.lineno(1), find_column(input, t.slice[1]))
-    else           :  t[0] = Funciones(t[2], t[4], t[6], t.lineno(1), find_column(input, t.slice[1]))
+    if t[4] == ')' :  t[0] = Funciones(t[2], t[6], None, t[7], t.lineno(1), find_column(input, t.slice[1]))
+    else           :  t[0] = Funciones(t[2], t[7], t[4], t[8], t.lineno(1), find_column(input, t.slice[1]))
 
 def p_lista_parametros1(t):
+    'LISTAPARAMETROS : LISTAPARAMETROS COMA EXPRESION'
+    t[1].append(Parametro(t[3], None, 0, 0))
+    t[0] = t[1]
+    
+def p_lista_parametros11(t):
     '''
-    LISTAPARAMETROS : LISTAPARAMETROS COMA EXPRESION
-                    | LISTAPARAMETROS COMA EXPRESION DBPUNTO ID
+    LISTAPARAMETROS : LISTAPARAMETROS COMA EXPRESION DBPUNTO ID
                     | LISTAPARAMETROS COMA EXPRESION DBPUNTO tipo
     '''
-    t[1].append(t[3])
+    t[1].append(Parametro(t[3], t[5], 0, 0))
     t[0] = t[1]
     
 def p_lista_parametros2(t):
+    'LISTAPARAMETROS : EXPRESION'
+    t[0] = []
+    t[0].append(Parametro(t[1], None, 0, 0))
+
+def p_lista_parametros21(t):
     '''
-    LISTAPARAMETROS : EXPRESION
-                    | EXPRESION DBPUNTO ID
+    LISTAPARAMETROS : EXPRESION DBPUNTO ID
                     | EXPRESION DBPUNTO tipo
     '''
     t[0] = []
-    t[0].append(t[1])
+    t[0].append(Parametro(t[1], t[3], 0, 0))
     
 def p_llamda_funciones(t):
     '''
@@ -674,13 +684,15 @@ def p_tipo(t):
          | RBOOL
          | RCHAR
          | RSTRING
+         | RARRAY
     '''
     if t[1] == 'Int64':     t[0] = tipos.ENTERO
     elif t[1] == 'Float64': t[0] = tipos.DECIMAL
     elif t[1] == 'Bool':    t[0] = tipos.BOOLEAN
     elif t[1] == 'Char':    t[0] = tipos.CARACTER
     elif t[1] == 'String':  t[0] = tipos.CADENA
-    elif t[1] == 'nothing': t[0] = tipos.NULO
+    elif t[1] == 'Nothing': t[0] = tipos.NULO
+    elif t[1] == 'Array': t[0] = tipos.VECTOR
  
 import ply.yacc as yacc
 parser = yacc.yacc()

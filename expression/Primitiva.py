@@ -63,6 +63,7 @@ class Primitiva(Instruccion):
                 gen.addExp(tmp, tmp, '+', '1')
 
             vec = self.getTipo(self.value)
+            #gen.deleteTemp(tmp)
             return Retornar(tmpH, tipos.VECTOR, True, vec)            
             
     def getTipo(self, vector):

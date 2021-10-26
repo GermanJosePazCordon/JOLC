@@ -38,6 +38,8 @@ class Variable(Instruccion):
         retorno = Retornar(None, tipos.BOOLEAN, False)
         retorno.ev = self.ev
         retorno.ef = self.ef
+        #gen.deleteTemp(temp)
+        #gen.deleteTemp(tempPos)
         return retorno
     
     def getNodo(self):
