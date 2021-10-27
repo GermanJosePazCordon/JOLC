@@ -1,4 +1,5 @@
 from abstract.Instruccion import Instruccion
+from instrucciones.Llamada import Llamada
 from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 from expression.Primitiva import Primitiva
@@ -22,31 +23,48 @@ class Aritmetica(Instruccion):
     def interpretar(self, tree, table):
         aux = C3D()
         gen = aux.getInstance()
+        gen.addComment("Empezando aritmetica")
         left = None
         right = None
         unario = None
         if self.opU is None:
+            gen.addComment("Interpretando op1")
             p1 = self.op1.interpretar(tree, table)
             if isinstance(p1, Excepciones):
                 return p1
             left = p1.value
 
+            #--------------------------------------------------
+            if isinstance(self.op2, Llamada) and table.inFun:
+                genAux = C3D()
+                gen = genAux.getInstance()
+                gen.saveTemp(table, left) 
+            #--------------------------------------------------
+            gen.addComment("Interpretando op2")
             p2 = self.op2.interpretar(tree, table)
             if isinstance(p2, Excepciones):
                 return p2
             right = p2.value
+            
+            #--------------------------------------------------
+            if isinstance(self.op2, Llamada) and table.inFun:
+                genAux = C3D()
+                gen = genAux.getInstance()
+                gen.getTemp(table, left)
+            #--------------------------------------------------
 
             if self.op1.tipo == tipos.BOOLEAN:
                 left = str(left).lower()
             elif self.op2.tipo == tipos.BOOLEAN:
                 right = str(right).lower()
         else:
+            gen.addComment("Interpretando opU")
             unario = self.opU.interpretar(tree, table)
             if isinstance(unario, Excepciones):
                 return unario
             pu = unario
             unario = unario.value
-
+        gen.addComment("Realizando operacion")
         if self.operador == '+':
             if p1.tipo == tipos.ENTERO:  # Entero + algo
                 if p2.tipo == tipos.ENTERO:
@@ -54,12 +72,14 @@ class Aritmetica(Instruccion):
                     self.tipo = tipos.ENTERO
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 elif p2.tipo == tipos.DECIMAL:
                     # Entero + Decimal
                     self.tipo = tipos.DECIMAL
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 else:
                     #Error
@@ -71,6 +91,7 @@ class Aritmetica(Instruccion):
                     self.tipo = tipos.DECIMAL
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 elif p2.tipo == tipos.DECIMAL:
                     # Decimal + Decimal
@@ -78,6 +99,7 @@ class Aritmetica(Instruccion):
                     # Decimal + Decimal
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 else:
                     #Error
@@ -94,12 +116,14 @@ class Aritmetica(Instruccion):
                     # Entero - Entero
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 elif p2.tipo == tipos.DECIMAL:
                     self.tipo = tipos.DECIMAL
                     # Entero - Decimal
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 else:
                     #Error
@@ -111,12 +135,14 @@ class Aritmetica(Instruccion):
                     # Decimal - Entero
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 elif p2.tipo == tipos.DECIMAL:
                     self.tipo = tipos.DECIMAL
                     # Decimal - Decimal
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 else:
                     #Error
@@ -133,12 +159,14 @@ class Aritmetica(Instruccion):
                     # Entero * Entero
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 elif p2.tipo == tipos.DECIMAL:
                     self.tipo = tipos.DECIMAL
                     # Entero * Decimal
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 else:
                     #Error
@@ -150,12 +178,14 @@ class Aritmetica(Instruccion):
                     # Decimal * Entero
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 elif p2.tipo == tipos.DECIMAL:
                     self.tipo = tipos.DECIMAL
                     # Decimal * Decimal
                     temp = gen.addTemp()
                     gen.addExp(temp, left, self.operador, right)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 else:
                     #Error
@@ -180,6 +210,7 @@ class Aritmetica(Instruccion):
                     temp = gen.addTemp()
                     gen.getStack(temp, 'P')
                     gen.getTable(table.size)
+                    #gen.deleteTemp(temp)
                     return Retornar(temp, tipos.CADENA, True)
                 else:
                     #Error
@@ -260,6 +291,7 @@ class Aritmetica(Instruccion):
                     temp = gen.addTemp()
                     gen.getStack(temp, 'P')
                     gen.getTable(table.size)
+                    #gen.deleteTemp(temp)
                     return Retornar(temp, p1.tipo, True)
                 else:
                     #Error
@@ -334,6 +366,7 @@ class Aritmetica(Instruccion):
                     gen.addLabel(salida) 
                     gen.addExp(temp, "math.Mod(" + izq + "," + der + ")", '', '')
                     gen.addLabel(salida2)
+                    #gen.deleteTemp(temp)
                     return self.retorno(temp, True)
                 else:
                     #Error
@@ -365,11 +398,14 @@ class Aritmetica(Instruccion):
                 self.tipo = tipos.ENTERO
                 temp = gen.addTemp()
                 gen.addExp(temp, unario, "*", "-1")
+                #gen.deleteTemp(temp)
                 return self.retorno(temp, True)
             elif pu.tipo == tipos.DECIMAL:
                 self.tipo = tipos.DECIMAL
                 temp = gen.addTemp()
                 gen.addExp(temp, unario, "*", "-1")
+                #gen.deleteTemp(temp)
+                return self.retorno(temp, True)
             else:
                 #Error
                 print("Operandos erroneos para el operador unario")

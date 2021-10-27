@@ -19,6 +19,7 @@ class While(Instruccion):
             return
         genAux = C3D()
         gen = genAux.getInstance()
+        gen.addComment("Empezando While")
         continueando = gen.newLabel()
         gen.addGoto(continueando)
         gen.addLabel(continueando)

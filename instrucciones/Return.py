@@ -12,17 +12,18 @@ class Return(Instruccion):
     def interpretar(self, tree, table):
         genAux = C3D()
         gen = genAux.getInstance()
-        value = self.express.interpretar(tree, table)
-        if value.tipo == tipos.BOOLEAN:
-            tmp = gen.newLabel()
-            gen.addLabel(value.ev)
-            gen.setStack('P', '1')
-            gen.addGoto(tmp)
-            gen.addLabel(value.ef)
-            gen.setStack('P', '0')
-            gen.addLabel(tmp)
-        else:
-            gen.setStack('P', value.value)
+        if self.express is not None:
+            value = self.express.interpretar(tree, table)
+            if value.tipo == tipos.BOOLEAN:
+                tmp = gen.newLabel()
+                gen.addLabel(value.ev)
+                gen.setStack('P', '1')
+                gen.addGoto(tmp)
+                gen.addLabel(value.ef)
+                gen.setStack('P', '0')
+                gen.addLabel(tmp)
+            else:
+                gen.setStack('P', value.value)
         gen.addGoto(table.returnn)
     
     def getNodo(self):

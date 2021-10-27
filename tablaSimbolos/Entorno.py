@@ -8,16 +8,18 @@ class Entorno:
         self.breakk = ''
         self.continuee = ''
         self.returnn = ''
+        self.inFun = False
         if(last != None):
             self.size = last.size
             self.breakk = last.breakk
             self.continuee = last.continuee
             self.returnn = last.returnn
+            self.inFun = last.inFun
         self.variables = {}
         self.functions = {}
         self.structs = {}
         
-    
+        
     def setVariable(self, ids, tipo, heap, vector):
         if ids in self.variables.keys():
             print("Ya existe la variable")
@@ -42,18 +44,18 @@ class Entorno:
     def getVariable(self, varible):
         entorno = self
         while entorno != None:
-            tmp = entorno.variables.keys()
-            print(tmp)
             if varible in entorno.variables.keys():
                 return entorno.variables[varible]
             entorno = entorno.last
         return None
     
     def getFuncion(self, funcion):
-        if funcion in self.functions.keys():
-            return self.functions[funcion]
-        else:
-            return None
+        entorno = self
+        while entorno != None:
+            if funcion in entorno.functions.keys():
+                return entorno.functions[funcion]
+            entorno = entorno.last
+        return None
         
     def getStruct(self, struct):
         entorno = self

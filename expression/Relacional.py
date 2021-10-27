@@ -16,6 +16,7 @@ class Relacional(Instruccion):
     def interpretar(self, tree, table):
         aux = C3D()
         gen = aux.getInstance()
+        gen.addComment("Empezando relacional")
         p1 = None
         p2 = None
         p1 = self.op1.interpretar(tree, table)

@@ -16,6 +16,7 @@ class Nativa(Instruccion):
         value = self.expresion.interpretar(tree, table)
         genAux = C3D()
         gen = genAux.getInstance()
+        gen.addComment("Empezando nativas")
         if value.tipo != tipos.CADENA:
             #Error
             print("Tipo de operacion erroneo")

@@ -36,6 +36,7 @@ class Primitiva(Instruccion):
 
             return retorno
         elif self.tipo == tipos.CADENA:
+            gen.addComment("Guardando cadena en el heap")
             temp = gen.addTemp()
             gen.addExp(temp, 'H', '', '')
 
@@ -48,6 +49,7 @@ class Primitiva(Instruccion):
 
             return Retornar(temp, tipos.CADENA, True)
         elif self.tipo == tipos.VECTOR:
+            gen.addComment("Guardando vector en el heap")
             tmpH = gen.addTemp()
             gen.addExp(tmpH, 'H', '', '')
             
@@ -63,7 +65,6 @@ class Primitiva(Instruccion):
                 gen.addExp(tmp, tmp, '+', '1')
 
             vec = self.getTipo(self.value)
-            #gen.deleteTemp(tmp)
             return Retornar(tmpH, tipos.VECTOR, True, vec)            
             
     def getTipo(self, vector):

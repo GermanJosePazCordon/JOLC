@@ -42,6 +42,7 @@ class ModificarVector(Instruccion):
         
         genAux = C3D()
         gen = genAux.getInstance()
+        gen.addComment("Empezando modificacion a vector")
         tmpP = gen.addTemp()
         size = gen.addTemp()
         posHeap = gen.addTemp()
@@ -68,6 +69,7 @@ class ModificarVector(Instruccion):
         gen.addGoto(correcto)
         
         gen.addLabel(error)
+        gen.addComment("Print BoundsError")
         gen.addPrint("c", 66)
         gen.addPrint("c", 111)
         gen.addPrint("c", 117)

@@ -14,10 +14,12 @@ class Variable(Instruccion):
     def interpretar(self, tree, table):
         genAux = C3D()
         gen = genAux.getInstance()
+        
         variable = table.getVariable(self.id)
         if(variable == None):
             print("No existe la variable")
             return
+        gen.addComment("Guardando variable")
         temp = gen.addTemp()
         tempPos = variable.pos
         if(not variable.isGlobal):

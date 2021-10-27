@@ -18,25 +18,29 @@ class EvaluarIF(Instruccion):
     def interpretar(self, tree, table):
         genAux = C3D()
         gen = genAux.getInstance()
+        gen.addComment("Empezando IF")
         one = False
         salida = gen.newLabel()
         for i in self.instruccionesIF:
             if one:
+                gen.addComment("Agregando etiqueta para elseif")
                 gen.addLabel(condicion.ef)
-            one = True
+            one = True 
             express = i.getExpresion()
             if express.tipo != tipos.BOOLEAN:
                 print('Tipo invalido de condicion')
                 return
+            gen.addComment("Interpretando condicion")
             condicion = express.interpretar(tree, table)
-        
             gen.addLabel(condicion.ev)
             instrucciones = i.getInstrucciones()
+            gen.addComment("Interpretando instrucciones IF/ELSEIF")
             for j in instrucciones:
                 j.interpretar(tree, table)
             gen.addGoto(salida)
         gen.addLabel(condicion.ef)
         if self.instruccionElse != None:
+            gen.addComment("Interpretando instrucciones ELSE")
             instrucciones = self.instruccionElse.getInstrucciones()
             for j in instrucciones:
                 j.interpretar(tree, table)

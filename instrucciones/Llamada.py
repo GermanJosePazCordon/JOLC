@@ -32,49 +32,25 @@ class Llamada(Instruccion):
             return
         
     def isFuncion(self, tree, table, funcion):
+        size = table.size
         parametrosFun = funcion.listaParametros
-        instruccionesFun = funcion.listaInstrucciones
         if len(self.listaParametros) != len(parametrosFun):
             #Error
             print("Numero de parametros incorrecto")
             return
-        #-----------------------------------------------------------------
-        parametrosLlamada = []
-        size = table.size
-        for i in self.listaParametros:
-            parametrosLlamada.append(i.id.interpretar(tree, table))
-        #---------------------------------------------------------------
         genAux = C3D()
         gen = genAux.getInstance()
-        
-        
-        if funcion.Bfuncion is False:
-            #DECLARANDO LA FUNCION CON SUS PARAMETROS
-            tabla = Entorno(table)
-            returnn = gen.newLabel()
-            tabla.returnn = returnn
-            tabla.size = 1
-            cont = 0
-            
-            for i in parametrosFun:
-                if i.tipo is None:
-                    i.tipo = funcion.retorno
-                tabla.setVariable(i.id.id, i.tipo, (i.tipo == tipos.CADENA or i.tipo == tipos.STRUCT), parametrosLlamada[cont].vector)
-                cont += 1
-    
-            gen.initFun(self.id)
-            for i in instruccionesFun:
-                i.interpretar(tree, tabla)
-            gen.addLabel(returnn)
-            gen.endFun()
-            funcion.Bfuncion = True
+        gen.addComment("Empezando llamada")
+        parametrosLlamada = []
+        for i in self.listaParametros:
+            tmp = gen.temps[len(gen.temps) - 1]
+            if isinstance(i.express, Llamada) and table.inFun:
+                gen.saveTemp(table, tmp)
+            parametrosLlamada.append(i.express.interpretar(tree, table))
+            if isinstance(i.express, Llamada) and table.inFun:
+                gen.getTemp(table, tmp)
         
         #EMPEZANDO LA LLAMADA
-        '''parametrosLlamada = []
-        size = table.size
-        for i in self.listaParametros:
-            parametrosLlamada.append(i.id.interpretar(tree, table))'''
-            
         tmp = gen.addTemp()
         gen.addExp(tmp, 'P', '+', (size + 1))
         cont = 0;

@@ -1,5 +1,6 @@
 from abstract.Instruccion import Instruccion
 from abstract.Retorno import Retornar
+from instrucciones.Llamada import Llamada
 from tablaSimbolos.Tipo import tipos
 from tablaSimbolos.C3D import C3D
 
@@ -20,13 +21,10 @@ class Logica(Instruccion):
     def interpretar(self, tree, table):
         left = None
         right = None
-        unario = None
-        p1 = None
-        p2 = None
         pu = None
         genAux = C3D()
         gen = genAux.getInstance()
-
+        gen.addComment("Empezando logica")
         self.verifyLabel()
         lbl = ''
 
@@ -42,6 +40,7 @@ class Logica(Instruccion):
             lbl = self.opU.ef = gen.newLabel()
             self.opU.ev = self.ef
             self.opU.ef = self.ev
+            gen.addComment("Interpretando opU")
             pu = self.opU.interpretar(tree, table)
             if pu.tipo != tipos.BOOLEAN:
                 # ERRORES
@@ -50,12 +49,27 @@ class Logica(Instruccion):
             retorno.ev = self.ev
             retorno.ef = self.ef
             return retorno
+        
+        gen.addComment("Interpretando op1")
         left = self.op1.interpretar(tree, table)
+        #--------------------------------------------------
+        if isinstance(self.op2, Llamada) and table.inFun:
+            genAux = C3D()
+            gen = genAux.getInstance()
+            gen.saveTemp(table, left) 
+        #--------------------------------------------------
         if left.tipo != tipos.BOOLEAN:
             # ERRORES
             return
         gen.addLabel(lbl)
+        gen.addComment("Interpretando op2")
         right = self.op2.interpretar(tree, table)
+        #--------------------------------------------------
+        if isinstance(self.op2, Llamada) and table.inFun:
+            genAux = C3D()
+            gen = genAux.getInstance()
+            gen.getTemp(table, left)
+        #--------------------------------------------------
         if right.tipo != tipos.BOOLEAN:
             # ERRORES
             return

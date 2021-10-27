@@ -38,7 +38,7 @@ class For(Instruccion):
     def rango(self, tree, table):
         genAux = C3D()
         gen = genAux.getInstance()
-        
+        gen.addComment("Empezando FOR por rango")
         ri = self.rangoinf.interpretar(tree, table)
         ru = self.rangosup.interpretar(tree, table)
         if ri.tipo != tipos.ENTERO and ri.tipo != tipos.DECIMAL:
@@ -54,6 +54,7 @@ class For(Instruccion):
         
         variable = tabla.getVariable(self.variable)
         if variable is None:
+            gen.addComment("Declarando iterador")
             declara = DeclararVariable(ri.tipo, self.variable, self.rangoinf, None, self.line, self.column)
             declara.interpretar(tree, tabla)
             
@@ -93,7 +94,7 @@ class For(Instruccion):
     def cadenas(self, tree, table, cadena):
         genAux = C3D()
         gen = genAux.getInstance()
-        
+        gen.addComment("Empezando FOR por cadena")
         if cadena.tipo != tipos.CADENA:
             #Error
             print("Tipo incorrecto cadena invalido")
@@ -103,6 +104,7 @@ class For(Instruccion):
         
         variable = tabla.getVariable(self.variable)
         if variable is None:
+            gen.addComment("Declarando variable iteradora")
             value = Primitiva(tipos.CARACTER, 'A', self.line, self.column)
             declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
             declara.interpretar(tree, tabla)
@@ -141,7 +143,7 @@ class For(Instruccion):
     def vector(self, tree, table, vector):
         genAux = C3D()
         gen = genAux.getInstance()
-        
+        gen.addComment("Empezando FOR por vector")
         if vector.tipo != tipos.VECTOR:
             #Error
             print("Tipo incorrecto vector invalido")
@@ -155,6 +157,7 @@ class For(Instruccion):
                 tipo = tipos.VECTOR
             else:
                 tipo = vector.vector[0]
+            gen.addComment("Declarando variable iteradora")
             value = Primitiva(tipos.ENTERO, 0, self.line, self.column)
             declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
             declara.interpretar(tree, tabla)

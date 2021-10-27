@@ -37,6 +37,7 @@ class AccesoVector(Instruccion):
         
         genAux = C3D()
         gen = genAux.getInstance()
+        gen.addComment("Empezando acceso a vector")
         tmpP = gen.addTemp() 
         size = gen.addTemp()
         posHeap = gen.addTemp()
@@ -51,7 +52,6 @@ class AccesoVector(Instruccion):
         types = self.verifyTipo(variable.vector, len(pos))
         
         gen.getStack(tmpP, variable.pos)
-        
         
         error = gen.newLabel()
         salida2 = gen.newLabel()
@@ -69,7 +69,7 @@ class AccesoVector(Instruccion):
             gen.addExp(tmpH, tmpP, '+', posHeap) 
             gen.getHeap(tmpP, tmpH)
         gen.addGoto(salida2)
-            
+        gen.addComment("Print BoundsError")
         gen.addLabel(error)
         gen.addPrint("c", 66)
         gen.addPrint("c", 111)

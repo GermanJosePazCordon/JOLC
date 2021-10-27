@@ -68,14 +68,13 @@ class Println(Instruccion):
             
             tmpS = gen.addTemp()
             tmpI = gen.addTemp()
+            gen.addComment("Guardando temporales")
             gen.addExp(tmpS, size, '', '')
             gen.addExp(tmpI, inicio, '', '')
-         
             gen.getHeap(size, tmp)
             gen.addExp(inicio, tmp, "+", "1")
             self.printVector(tree, table, inicio, size, vector[0])  
-            
-            
+            gen.addComment("Recuperando temporales")
             gen.addExp(size, tmpS, '', '')
             gen.addExp(inicio, tmpI, '', '')
             gen.addPrint("c", 93)

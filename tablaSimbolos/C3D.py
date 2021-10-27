@@ -76,6 +76,9 @@ class C3D:
             C3D.gen = C3D()
         return C3D.gen
     
+    def addComment(self, comment):
+        self.codeIn(f'/*============== {comment} ==============*/\n')
+    
     def addTemp(self):
         if len(self.free) > 0:
             temp = self.free.pop()
@@ -141,6 +144,22 @@ class C3D:
 
     def nextHeap(self):
         self.codeIn('H=H+1;\n')
+      
+    def saveTemp(self, table, temp):
+        self.addComment("Guardando temporales")
+        tmp = self.addTemp()
+        self.addExp(tmp, 'P', '+', table.size)
+        self.setStack(tmp, temp)
+        table.size = table.size + 1
+        self.addComment("Temporales guardados")
+    
+    def getTemp(self, table, temp):
+        self.addComment("Recuperando temporales") 
+        table.size = table.size - 1
+        tmp = self.addTemp()
+        self.addExp(tmp, 'P', '+', table.size)
+        self.getStack(temp, tmp)
+        self.addComment("Temporales recuperados") 
         
     # INSTRUCCIONES
     def addPrint(self, type, value):
@@ -150,12 +169,14 @@ class C3D:
         self.codeIn(f'fmt.Printf("%f", {value});\n')
     
     def printTrue(self):
+        self.addComment("Print 'true'")
         self.addPrint("c", 116)
         self.addPrint("c", 114)
         self.addPrint("c", 117)
         self.addPrint("c", 101)
 
     def printFalse(self):
+        self.addComment("Print 'false'")
         self.addPrint("c", 102)
         self.addPrint("c", 97)
         self.addPrint("c", 108)

@@ -20,6 +20,7 @@ class DeclararVariable(Instruccion):
             return'''
         genAux = C3D()
         gen = genAux.getInstance()
+        gen.addComment("Empezando declaracion")
         value = self.value.interpretar(tree, table)
         vairable = table.getVariable(self.id)
         if vairable == None:

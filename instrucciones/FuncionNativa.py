@@ -20,6 +20,7 @@ class FuncionNativa(Instruccion):
         if self.funcion == 'float':
             genAux = C3D()
             gen = genAux.getInstance()
+            gen.addComment("Empezando float")
             if value.tipo == tipos.ENTERO:
                 self.tipo = tipos.DECIMAL
                 return Retornar(value.value, tipos.DECIMAL, True)
@@ -43,6 +44,7 @@ class FuncionNativa(Instruccion):
                 self.tipo = tipos.ENTERO
                 genAux = C3D()
                 gen = genAux.getInstance()
+                gen.addComment("Empezando trunc")
                 if gen.imath == False:
                         gen.imports += ';\n\t"math"'
                         gen.imath = True        
@@ -61,6 +63,7 @@ class FuncionNativa(Instruccion):
         elif self.funcion == 'length':
             genAux = C3D()
             gen = genAux.getInstance()
+            gen.addComment("Empezando length")
             if value.tipo == tipos.VECTOR:
                 self.tipo = tipos.ENTERO
                 tmp =  gen.addTemp()
@@ -76,7 +79,8 @@ class FuncionNativa(Instruccion):
     def parseInt(self, tree, table, value):
         genAux = C3D()
         gen = genAux.getInstance()
-        
+        gen.addComment("Empezando parseInt")
+    
         tmpH = gen.addTemp()
         gen.addExp(tmpH, value.value, '', '')
         
@@ -92,6 +96,7 @@ class FuncionNativa(Instruccion):
         unidad = gen.addTemp()
         
         #-------------------------------------CONTANDO CANTIDAD DE ENTEROS
+        gen.addComment("Contantdo cantidad de enteros")
         gen.addLabel(continuando)
         gen.getHeap(num, tmpH)
         gen.newIF(num, "==", "-1", salida)
@@ -112,6 +117,7 @@ class FuncionNativa(Instruccion):
         gen.newIF(num, "==", "46", salida)   
         
         #----------------------------------- OBTENIENDO LA UNIDAD: UNIDAD DECENA CENTENA MILLAR ...
+        gen.addComment("Obteniendo unidad: unidad, decena centena ....")
         gen.potencia()
         tmp = gen.addTemp()
         gen.addExp(tmp, 'P', '+', table.size)
@@ -125,6 +131,7 @@ class FuncionNativa(Instruccion):
         gen.getTable(table.size)
         #-----------------------------------
         gen.addExp(num, num, '-', 48)
+        gen.addComment("Multiplicando unidad por numero para obtener el numero a sumar")
         gen.addExp(multi, num, '*', unidad)
         gen.addExp(suma, suma, '+', multi)
         
@@ -139,7 +146,7 @@ class FuncionNativa(Instruccion):
     def parseFloat(self, tree, table, value):
         genAux = C3D()
         gen = genAux.getInstance()
-        
+        gen.addComment("Empezando parseFloat")
         tmpH = gen.addTemp()
         gen.addExp(tmpH, value.value, '', '')
         
@@ -158,6 +165,7 @@ class FuncionNativa(Instruccion):
         unidad = gen.addTemp()
         
         #-------------------------------------CONTANDO CANTIDAD DE ENTEROS
+        gen.addComment("Contantdo cantidad de enteros")
         gen.addLabel(continuando)
         gen.getHeap(num, tmpH)
         gen.newIF(num, "==", "-1", salida)
@@ -179,6 +187,7 @@ class FuncionNativa(Instruccion):
         gen.newIF(num, "==", "46", cambio)   
         
         #----------------------------------- OBTENIENDO LA UNIDAD: UNIDAD DECENA CENTENA MILLAR ...
+        gen.addComment("Obteniendo unidad: unidad, decena centena ....")
         gen.potencia()
         tmp = gen.addTemp()
         gen.addExp(tmp, 'P', '+', table.size)
@@ -193,6 +202,7 @@ class FuncionNativa(Instruccion):
         #-----------------------------------
         
         gen.addExp(num, num, '-', 48)
+        gen.addComment("Multiplicando unidad por numero para obtener el numero a sumar")
         gen.addExp(multi, num, '*', unidad)
         gen.addExp(suma, suma, '+', multi)
         
@@ -204,6 +214,7 @@ class FuncionNativa(Instruccion):
         salida = gen.newLabel()
         continuando = gen.newLabel()
         gen.addExp(decimal, "0", '', '')
+        gen.addComment("Empezando a sumar los decimales")
         gen.addLabel(cambio)
         
         gen.getHeap(num, tmpH)
@@ -214,6 +225,7 @@ class FuncionNativa(Instruccion):
         gen.getHeap(num, tmpH)
         gen.newIF(num, "==", "-1", salida) 
         #----------------------------------- OBTENIENDO LA UNIDAD: UNIDAD DECENA CENTENA MILLAR ...
+        gen.addComment("Obteniendo unidad: unidad, decena centena ....")
         gen.potencia()
         tmp = gen.addTemp()
         gen.addExp(tmp, 'P', '+', table.size)
@@ -228,6 +240,7 @@ class FuncionNativa(Instruccion):
         #-----------------------------------
         
         gen.addExp(num, num, '-', 48)
+        gen.addComment("Para los decimales la unidad debe ser el reciproco")
         gen.addExp(unidad, 1, '/', unidad)
         gen.addExp(multi, num, '*', unidad)
         gen.addExp(suma, suma, '+', multi)
