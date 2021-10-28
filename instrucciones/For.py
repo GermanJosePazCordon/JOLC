@@ -57,16 +57,17 @@ class For(Instruccion):
             gen.addComment("Declarando iterador")
             declara = DeclararVariable(ri.tipo, self.variable, self.rangoinf, None, self.line, self.column)
             declara.interpretar(tree, tabla)
-            
+        variable = tabla.getVariable(self.variable)    
         tmpP = gen.addTemp()
         declara = gen.addTemp()
-        gen.addExp(tmpP, 'P', '+', '1')
-        gen.setStack(tmpP, ri.value)
+        gen.addExp(tmpP, 'P', '+', variable.pos)
         
         condicional = gen.newLabel()
         salida = gen.newLabel()
         continuando = gen.newLabel()
         iterador = gen.newLabel()
+        
+        gen.setStack(tmpP, ri.value)
         
         gen.addLabel(continuando)
         gen.getStack(declara, tmpP)
@@ -78,8 +79,7 @@ class For(Instruccion):
         gen.addGoto(salida)
         gen.addLabel(condicional)
         
-        variable = tabla.getVariable(self.variable)
-        gen.setStack(variable.pos, declara)
+        #gen.setStack(tmpP, declara)
         for i in self.listaInstrucciones:
             i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
         
@@ -90,7 +90,8 @@ class For(Instruccion):
         
         gen.addGoto(continuando) 
         gen.addLabel(salida)
-    
+        gen.addComment("Fin FOR por rango")
+        
     def cadenas(self, tree, table, cadena):
         genAux = C3D()
         gen = genAux.getInstance()
@@ -108,11 +109,11 @@ class For(Instruccion):
             value = Primitiva(tipos.CARACTER, 'A', self.line, self.column)
             declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
             declara.interpretar(tree, tabla)
-        
+        variable = tabla.getVariable(self.variable)
         tmpP = gen.addTemp()
         tmpH = gen.addTemp()
         gen.addExp(tmpH, cadena.value, '', '')
-        gen.addExp(tmpP, 'P', '', '')
+        gen.addExp(tmpP, 'P', '+', variable.pos)
         
         salida = gen.newLabel()
         continuando = gen.newLabel()
@@ -127,8 +128,8 @@ class For(Instruccion):
         
         gen.newIF(tmp, "==", "-1", salida)
         #------------------------------------
-        variable = tabla.getVariable(self.variable)
-        gen.setStack(variable.pos, tmp)
+        
+        gen.setStack(tmpP, tmp)
         for i in self.listaInstrucciones:
             i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
             
@@ -138,8 +139,8 @@ class For(Instruccion):
         #------------------------------------
         gen.addGoto(continuando)
         gen.addLabel(salida)
-        
-    
+        gen.addComment("Fin FOR por cadena")
+           
     def vector(self, tree, table, vector):
         genAux = C3D()
         gen = genAux.getInstance()
@@ -164,16 +165,26 @@ class For(Instruccion):
             variable = tabla.getVariable(self.variable)
             variable.tipo = tipo
             variable.vector = vector.vector[0]
-            
+        variable = tabla.getVariable(self.variable)
+
+        tmpP = gen.addTemp()
+        gen.addExp(tmpP, 'P', '+', variable.pos)
+        #gen.addExp(vector.value, vector.value, '+', tmpP)
         size = gen.addTemp()
         gen.getHeap(size, vector.value)
         inicio = gen.addTemp()
         gen.addExp(inicio, vector.value, "+", "1")
         
+        tmp = gen.addTemp()
+        gen.getHeap(tmp, inicio)
+        gen.setStack(tmpP, tmp)
+        
+        gen.addExp(inicio, inicio, "+", "1")
+        
         continuando = gen.newLabel()
         salida = gen.newLabel()
         iterador = gen.newLabel()
-             
+
         gen.addLabel(continuando)
         
         tabla.breakk = salida
@@ -184,8 +195,7 @@ class For(Instruccion):
         tmp = gen.addTemp()
         gen.getHeap(tmp, inicio)
         
-        variable = tabla.getVariable(self.variable)
-        gen.setStack(variable.pos, tmp)
+        #gen.setStack(tmpP, tmp)
         
         for i in self.listaInstrucciones:
             i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
@@ -195,8 +205,11 @@ class For(Instruccion):
         gen.addExp(inicio, inicio, "+", "1")
         gen.addExp(size, size, "-", "1")
         
+        gen.setStack(tmpP, tmp)
+        
         gen.addGoto(continuando)
         gen.addLabel(salida)
+        gen.addComment("Fin FOR por vector")
         
     def getNodo(self):
         pass

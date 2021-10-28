@@ -13,11 +13,18 @@ class Funciones(Instruccion):
         self.column = column
         self.id = ids
         self.tipo = tipos.FUNCION
-        self.retorno = types
+        self.retorno = ''
+        self.vector = ''
         self.listaParametros = listaParametros
         self.listaInstrucciones = listaInstrucciones
+        if isinstance(types, tipos):
+            self.retorno = types
+        else:
+            self.retorno = tipos.VECTOR
+            self.vector = types
     
     def interpretar(self, tree, table):
+        
         if self.listaParametros is None:
             self.listaParametros = []
         if self.listaInstrucciones is None:
@@ -40,9 +47,8 @@ class Funciones(Instruccion):
             elif isinstance(i.tipo, tipos):
                 tipo = i.tipo
             else:
-                tipo = tipos.ENTERO
-                vec = [tipos.ENTERO]
-                print(tipo)
+                tipo = tipos.VECTOR
+                vec = i.tipo
             tabla.setVariable(i.express.id, tipo, (i.tipo == tipos.CADENA or i.tipo == tipos.STRUCT), vec)
 
         gen.initFun(self.id)
@@ -51,6 +57,7 @@ class Funciones(Instruccion):
             i.interpretar(tree, tabla)
         gen.addLabel(returnn)
         gen.endFun()
+        gen.addComment("Fin declaracion de funciones")
         
     
     def getNodo(self):

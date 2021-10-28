@@ -45,6 +45,7 @@ class EvaluarIF(Instruccion):
             for j in instrucciones:
                 j.interpretar(tree, table)
         gen.addLabel(salida)
+        gen.addComment("Fin IF")
 
     def getNodo(self):
         pass

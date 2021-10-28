@@ -20,14 +20,14 @@ class DeclararVariable(Instruccion):
             return'''
         genAux = C3D()
         gen = genAux.getInstance()
-        gen.addComment("Empezando declaracion")
+        gen.addComment("Empezando declaracion varible")
         value = self.value.interpretar(tree, table)
         vairable = table.getVariable(self.id)
         if vairable == None:
             vairable = table.setVariable(self.id, value.tipo, (value.tipo == tipos.CADENA or value.tipo == tipos.STRUCT), value.vector)
         vairable.tipo = value.tipo
         pos = vairable.pos
-        if(not vairable.isGlobal):
+        if not vairable.isGlobal:
             pos = gen.addTemp()
             gen.addExp(pos, 'P',  "+", vairable.pos)
         if(value.tipo == tipos.BOOLEAN):
@@ -40,6 +40,7 @@ class DeclararVariable(Instruccion):
             gen.addLabel(ev)
         else:
             gen.setStack(pos, value.value)
+        gen.addComment("Fin declaracion varible")
             
     def getNodo(self):
         pass

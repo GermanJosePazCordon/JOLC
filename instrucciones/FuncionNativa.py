@@ -23,6 +23,7 @@ class FuncionNativa(Instruccion):
             gen.addComment("Empezando float")
             if value.tipo == tipos.ENTERO:
                 self.tipo = tipos.DECIMAL
+                gen.addComment("Fin float")
                 return Retornar(value.value, tipos.DECIMAL, True)
             else:
                 #Error
@@ -56,6 +57,7 @@ class FuncionNativa(Instruccion):
                 gen.newIF(value.value, ">=", 0, salida)
                 gen.addExp(res, res, '+', 1)
                 gen.addLabel(salida)
+                gen.addComment("Fin trunc")
                 return Retornar(res, tipos.ENTERO, True)
             else:
                 #Error
@@ -68,6 +70,7 @@ class FuncionNativa(Instruccion):
                 self.tipo = tipos.ENTERO
                 tmp =  gen.addTemp()
                 gen.getHeap(tmp, value.value)
+                gen.addComment("Fin length")
                 return Retornar(tmp, tipos.ENTERO, True)
             else:
                 #Error

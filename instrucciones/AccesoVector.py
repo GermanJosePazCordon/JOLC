@@ -1,5 +1,6 @@
 from expression.Primitiva import Primitiva
 from abstract.Instruccion import Instruccion
+from expression.Variable import Variable
 from tablaSimbolos.Tipo import tipos
 from tablaSimbolos.C3D import C3D
 from abstract.Retorno import Retornar
@@ -34,24 +35,24 @@ class AccesoVector(Instruccion):
                 print("Tipo de posicion incorrecta")
                 return
             pos.append(result.value)
-        
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addComment("Empezando acceso a vector")
+        tmp = gen.addTemp()
         tmpP = gen.addTemp() 
         size = gen.addTemp()
         posHeap = gen.addTemp()
         tmpH = gen.addTemp()
         
-        variable = table.getVariable(self.id)
-        if variable is None:
-            #Error
-            print("No existe la variable")
-            return
+        declara = Variable(self.id, self.line, self.column)
+        variable = declara.interpretar(tree, table)
         
         types = self.verifyTipo(variable.vector, len(pos))
         
-        gen.getStack(tmpP, variable.pos)
+        
+        #gen.addExp(tmp, 'P', '+', variable.pos)
+        gen.addExp(tmpP, variable.value,'','')
+
         
         error = gen.newLabel()
         salida2 = gen.newLabel()
@@ -87,6 +88,7 @@ class AccesoVector(Instruccion):
         gen.addGoto(salida2)
         
         gen.addLabel(salida2)
+        gen.addComment("Fin acceso a vector")
         return Retornar(tmpP, types[0], True, types[1])
       
     def porRango(self, tree, table):

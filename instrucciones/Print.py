@@ -15,7 +15,7 @@ class Print(Instruccion):
             if value.tipo == tipos.ENTERO:
                 gen.addPrint("d", value.value)
             elif value.tipo == tipos.DECIMAL:
-                gen.printFloat("g", value.value)
+                gen.printFloat("f", value.value)
             elif value.tipo == tipos.CARACTER:
                 gen.addPrint("c", value.value)
             elif value.tipo == tipos.BOOLEAN:
@@ -37,6 +37,7 @@ class Print(Instruccion):
                 gen.getStack(gen.addTemp(), "P")
                 gen.getTable(table.size)
             elif value.tipo == tipos.VECTOR:
+                gen.addComment("Empezando print vector")
                 size = gen.addTemp()
                 gen.getHeap(size, value.value)
                 inicio = gen.addTemp()
@@ -44,7 +45,8 @@ class Print(Instruccion):
                 gen.addPrint("c", 91)
                 self.printVector(tree, table, inicio, size, value.vector[0])
                 gen.addPrint("c", 93)
-    
+                gen.addComment("Fin print vector")
+ 
     def printVector(self, tree, table, inicio, size, vector):
         genAux = C3D()
         gen = genAux.getInstance()
@@ -100,7 +102,7 @@ class Print(Instruccion):
         
         gen.addGoto(continuando)
         gen.addLabel(salida)
-    
+        
         
     def getNodo(self):
         pass

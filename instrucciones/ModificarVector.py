@@ -1,4 +1,5 @@
 from abstract.Instruccion import Instruccion
+from expression.Variable import Variable
 from tablaSimbolos.Tipo import tipos
 from tablaSimbolos.C3D import C3D
 from abstract.Retorno import Retornar
@@ -26,11 +27,8 @@ class ModificarVector(Instruccion):
                 return
             pos.append(result.value)
             
-        variable = table.getVariable(self.id)
-        if variable is None:
-            #Error
-            print("No existe la variable")
-            return
+        declara = Variable(self.id, self.line, self.column)
+        variable = declara.interpretar(tree, table)
         
         value = self.express.interpretar(tree, table)
         
@@ -43,12 +41,15 @@ class ModificarVector(Instruccion):
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addComment("Empezando modificacion a vector")
+        tmp = gen.addTemp()
         tmpP = gen.addTemp()
         size = gen.addTemp()
         posHeap = gen.addTemp()
         tmpH = gen.addTemp()
         
-        gen.getStack(tmpP, variable.pos)
+        
+        gen.addExp(tmpP, variable.value,'','')
+
         
         correcto = gen.newLabel()
         error = gen.newLabel()
@@ -58,6 +59,7 @@ class ModificarVector(Instruccion):
             condicional = gen.newLabel()
             gen.getHeap(size, tmpP)
             gen.addExp(posHeap, i, '', '')
+            
             
             gen.newIF(posHeap, '>', size, error)
             gen.newIF(posHeap, '<', '1', error)
@@ -87,6 +89,7 @@ class ModificarVector(Instruccion):
         gen.addLabel(correcto)
         gen.setHeap(tmpH, value.value)
         gen.addLabel(salida2)
+        gen.addComment("Fin modificacion a vector")
     
     def verifyTipo(self, vector, lvl):
         if lvl == 0:

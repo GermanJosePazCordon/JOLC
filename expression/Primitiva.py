@@ -46,7 +46,7 @@ class Primitiva(Instruccion):
 
             gen.setHeap('H', '-1')            # FIN DE CADENA
             gen.nextHeap()
-
+            gen.addComment("Fin cadena en el heap")
             return Retornar(temp, tipos.CADENA, True)
         elif self.tipo == tipos.VECTOR:
             gen.addComment("Guardando vector en el heap")
@@ -65,6 +65,7 @@ class Primitiva(Instruccion):
                 gen.addExp(tmp, tmp, '+', '1')
 
             vec = self.getTipo(self.value)
+            gen.addComment("Fin vector en el heap")
             return Retornar(tmpH, tipos.VECTOR, True, vec)            
             
     def getTipo(self, vector):

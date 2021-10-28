@@ -32,7 +32,7 @@ class While(Instruccion):
             i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
         gen.addGoto(continueando) 
         gen.addLabel(condicion.ef)
-        
+        gen.addComment("Fin While")
         
         
     def getNodo(self):

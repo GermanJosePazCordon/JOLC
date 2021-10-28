@@ -411,7 +411,7 @@ class Aritmetica(Instruccion):
                 print("Operandos erroneos para el operador unario")
                 return
 
-    def retorno(self, result, temp):
+    def retorno(self, result, temp): 
         return Retornar(result, self.tipo, temp)
 
     def getNodo(self):

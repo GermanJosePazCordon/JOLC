@@ -37,11 +37,10 @@ class Variable(Instruccion):
             self.ef = gen.newLabel()
         gen.newIF(temp, '==', '1', self.ev)
         gen.addGoto(self.ef)
-        retorno = Retornar(None, tipos.BOOLEAN, False)
+        retorno = Retornar(None, tipos.BOOLEAN, False, variable.vector)
         retorno.ev = self.ev
         retorno.ef = self.ef
-        #gen.deleteTemp(temp)
-        #gen.deleteTemp(tempPos)
+        gen.addComment("Fin variable")
         return retorno
     
     def getNodo(self):

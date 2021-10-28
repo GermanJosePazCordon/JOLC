@@ -79,7 +79,8 @@ reservadas = {
     'Char'      : 'RCHAR',
     'String'    : 'RSTRING',
     'Nothing'   : 'RNULO',
-    'Array'   : 'RARRAY',
+    'Array'     : 'RARRAY',
+    'Vector'    : 'VECTOR',
     
     'uppercase' : 'UPPER',
     'lowercase' : 'LOWER',
@@ -107,6 +108,8 @@ tokens  = [
     'PTCOMA',
     'DBPUNTO',
     'DOSPUNTO',
+    'LLAIZQ',
+    'LLADER',
     'PARIZQ',
     'PARDER',    
     'CORIZQ',    
@@ -149,6 +152,8 @@ tokens  = [
 t_PTCOMA    = r';'
 t_DBPUNTO   = r'::'
 t_DOSPUNTO  = r':'
+t_LLAIZQ    = r'\{'
+t_LLADER    = r'\}'
 t_PARIZQ    = r'\('
 t_PARDER    = r'\)'
 t_CORIZQ    = r'\['
@@ -693,6 +698,11 @@ def p_tipo(t):
     elif t[1] == 'String':  t[0] = tipos.CADENA
     elif t[1] == 'Nothing': t[0] = tipos.NULO
     elif t[1] == 'Array': t[0] = tipos.VECTOR
+
+def p_tipoa_vector(t):
+    'tipo : VECTOR LLAIZQ tipo LLADER'
+    t[0] = []
+    t[0].append(t[3])
  
 import ply.yacc as yacc
 parser = yacc.yacc()

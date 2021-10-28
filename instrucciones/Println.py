@@ -37,6 +37,7 @@ class Println(Instruccion):
                 gen.getStack(gen.addTemp(), "P")
                 gen.getTable(table.size)
             elif value.tipo == tipos.VECTOR:
+                gen.addComment("Empezando print vector")
                 size = gen.addTemp()
                 gen.getHeap(size, value.value)
                 inicio = gen.addTemp()
@@ -44,6 +45,7 @@ class Println(Instruccion):
                 gen.addPrint("c", 91)
                 self.printVector(tree, table, inicio, size, value.vector[0])
                 gen.addPrint("c", 93)
+                gen.addComment("Fin print vector")
         gen.addPrint("c", 10)
  
     def printVector(self, tree, table, inicio, size, vector):
@@ -65,7 +67,6 @@ class Println(Instruccion):
         gen.getHeap(tmp, inicio)
         if type(vector) is list:   
             gen.addPrint("c", 91)
-            
             tmpS = gen.addTemp()
             tmpI = gen.addTemp()
             gen.addComment("Guardando temporales")

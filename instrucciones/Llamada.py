@@ -65,7 +65,23 @@ class Llamada(Instruccion):
         gen.getStack(tmp, 'P')
         gen.getTable(size)
         
-        return Retornar(tmp, funcion.retorno, True)
+        if funcion.retorno == tipos.BOOLEAN:
+            gen.addComment("Asiganando ev ef llamada")
+            ev = gen.newLabel()
+            ef = gen.newLabel()
+            gen.newIF(tmp, "==", "0", ef)
+            gen.addGoto(ev)
+            retorno = Retornar(tmp, tipos.BOOLEAN, False)
+            retorno.ev = ev
+            retorno.ef = ef
+            gen.addComment("Fin llamada")
+            return retorno
+        elif funcion.retorno == tipos.VECTOR:
+            gen.addComment("Fin llamada")
+            return Retornar(tmp, tipos.VECTOR, True, funcion.vector)
+        else:
+            gen.addComment("Fin llamada")
+            return Retornar(tmp, funcion.retorno, True)
     
     def isStruct(self, tree, table, struct):
         pass
