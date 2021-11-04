@@ -19,9 +19,11 @@ class Funciones(Instruccion):
         self.listaInstrucciones = listaInstrucciones
         if isinstance(types, tipos):
             self.retorno = types
-        else:
+        elif type(types) is list:
             self.retorno = tipos.VECTOR
             self.vector = types
+        else:
+            self.retorno = types
     
     def interpretar(self, tree, table):
         
@@ -42,14 +44,20 @@ class Funciones(Instruccion):
         for i in self.listaParametros:
             tipo = i.tipo
             vec = ''
+            struct = ''
             if tipo is None:
                 tipo = self.retorno
             elif isinstance(i.tipo, tipos):
                 tipo = i.tipo
-            else:
+            elif type(i.tipo) is list:
                 tipo = tipos.VECTOR
                 vec = i.tipo
-            tabla.setVariable(i.express.id, tipo, (i.tipo == tipos.CADENA or i.tipo == tipos.STRUCT), vec)
+                self.retorno = tipos.VECTOR
+            else:
+                self.retorno = tipos.STRUCT
+                tipo = tipos.STRUCT
+                struct = i.tipo
+            tabla.setVariable(i.express.id, tipo, (i.tipo == tipos.CADENA or i.tipo == tipos.STRUCT), vec, struct)
 
         gen.initFun(self.id)
         gen.addComment("Interpretando instrucciones funcion")

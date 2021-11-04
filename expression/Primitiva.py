@@ -66,8 +66,10 @@ class Primitiva(Instruccion):
 
             vec = self.getTipo(self.value)
             gen.addComment("Fin vector en el heap")
-            return Retornar(tmpH, tipos.VECTOR, True, vec)            
-            
+            return Retornar(tmpH, tipos.VECTOR, True, vec)        
+        elif self.tipo == tipos.STRUCT:    
+            pass
+        
     def getTipo(self, vector):
         vec = []
         for i in vector:

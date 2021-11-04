@@ -52,6 +52,7 @@ class Println(Instruccion):
         genAux = C3D()
         gen = genAux.getInstance()
         
+        tmp = gen.addTemp()
         continuando = gen.newLabel()
         elemento = gen.newLabel()
         salida = gen.newLabel()
@@ -63,7 +64,7 @@ class Println(Instruccion):
         gen.addPrint("c", 44)
         gen.addLabel(elemento)
         
-        tmp = gen.addTemp()
+        
         gen.getHeap(tmp, inicio)
         if type(vector) is list:   
             gen.addPrint("c", 91)

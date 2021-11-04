@@ -324,9 +324,9 @@ def p_declarar_variable_tipo(t):
     'DECLARARVARIABLE : ID IGUAL EXPRESION DBPUNTO tipo'
     t[0] = DeclararVariable(t[5], t[1], t[3], None, t.lineno(1), find_column(input, t.slice[1]))
     
-def p_declarar_variable_tipo2(t):
-    'DECLARARVARIABLE : ID IGUAL EXPRESION DBPUNTO ID'
-    t[0] = DeclararVariable(None, t[1], t[3], None, t.lineno(1), find_column(input, t.slice[1]))
+'''def p_declarar_variable_tipo2(t):
+    DECLARARVARIABLE : ID IGUAL EXPRESION DBPUNTO ID
+    t[0] = DeclararVariable(None, t[1], t[3], None, t.lineno(1), find_column(input, t.slice[1]))'''
 
 def p_declarar_variable(t):
     'DECLARARVARIABLE : ID IGUAL EXPRESION'
@@ -425,8 +425,8 @@ def p_funciones(t):
     FUNCIONES : FUNCTION ID PARIZQ LISTAPARAMETROS PARDER DBPUNTO tipo instrucciones END PTCOMA
               | FUNCTION ID PARIZQ PARDER DBPUNTO tipo instrucciones END PTCOMA
     '''
-    if t[4] == ')' :  t[0] = Funciones(t[2], t[6], None, t[7], t.lineno(1), find_column(input, t.slice[1]))
-    else           :  t[0] = Funciones(t[2], t[7], t[4], t[8], t.lineno(1), find_column(input, t.slice[1]))
+    if t[4] == ')' : t[0] = Funciones(t[2], t[6], None, t[7], t.lineno(1), find_column(input, t.slice[1]))
+    else           : t[0] = Funciones(t[2], t[7], t[4], t[8], t.lineno(1), find_column(input, t.slice[1]))
 
 def p_lista_parametros1(t):
     'LISTAPARAMETROS : LISTAPARAMETROS COMA EXPRESION'
@@ -435,8 +435,7 @@ def p_lista_parametros1(t):
     
 def p_lista_parametros11(t):
     '''
-    LISTAPARAMETROS : LISTAPARAMETROS COMA EXPRESION DBPUNTO ID
-                    | LISTAPARAMETROS COMA EXPRESION DBPUNTO tipo
+    LISTAPARAMETROS : LISTAPARAMETROS COMA EXPRESION DBPUNTO tipo
     '''
     t[1].append(Parametro(t[3], t[5], 0, 0))
     t[0] = t[1]
@@ -448,8 +447,7 @@ def p_lista_parametros2(t):
 
 def p_lista_parametros21(t):
     '''
-    LISTAPARAMETROS : EXPRESION DBPUNTO ID
-                    | EXPRESION DBPUNTO tipo
+    LISTAPARAMETROS : EXPRESION DBPUNTO tipo
     '''
     t[0] = []
     t[0].append(Parametro(t[1], t[3], 0, 0))
@@ -493,14 +491,12 @@ def p_struct_atributo(t):
     ATRIBUTO : ID DBPUNTO tipo PTCOMA
              | ID PTCOMA
     '''
-    if t[2] == ';' : t[0] = Atributo(None, t[1], None, t.lineno(1), find_column(input, t.slice[1]))
+    if t[2] == ';' : t[0] = Atributo(tipos.CADENA, t[1], None, t.lineno(1), find_column(input, t.slice[1]))
     else:  t[0] = Atributo(t[3], t[1], None, t.lineno(1), find_column(input, t.slice[1]))
 
-def p_struct_atributo2(t):
-    '''
+'''def p_struct_atributo2(t):
     ATRIBUTO : ID DBPUNTO ID PTCOMA
-    '''
-    t[0] = Atributo(None, t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))
+    t[0] = Atributo(None, t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))'''
 
 def p_asignar_struct(t):
     'ASIGNAR_STRUCT : ID PUNTO LISTAID IGUAL EXPRESION PTCOMA'
@@ -670,7 +666,11 @@ def p_lista_pos2(t):
 
 def p_expresion_acceso_struct(t):
     'EXPRESION : ID PUNTO LISTAID'
-    t[0] = AccesoAtributo(t[1], t[3], t.lineno(1), find_column(input, t.slice[1]))
+    t[0] = AccesoAtributo(t[1], t[3], t.lineno(1), find_column(input, t.slice[1]), False)
+
+def p_expresion_acceso_struct2(t):
+    'EXPRESION : ID LISTAPOS PUNTO LISTAID'
+    t[0] = AccesoAtributo(t[1], t[4], t.lineno(1), find_column(input, t.slice[1]), t[2])
 
 def p_lista_id1(t):
     'LISTAID : LISTAID PUNTO ID'
@@ -690,6 +690,7 @@ def p_tipo(t):
          | RCHAR
          | RSTRING
          | RARRAY
+         | ID
     '''
     if t[1] == 'Int64':     t[0] = tipos.ENTERO
     elif t[1] == 'Float64': t[0] = tipos.DECIMAL
@@ -697,7 +698,8 @@ def p_tipo(t):
     elif t[1] == 'Char':    t[0] = tipos.CARACTER
     elif t[1] == 'String':  t[0] = tipos.CADENA
     elif t[1] == 'Nothing': t[0] = tipos.NULO
-    elif t[1] == 'Array': t[0] = tipos.VECTOR
+    elif t[1] == 'Array':   t[0] = tipos.VECTOR
+    else:                   t[0] = t[1]
 
 def p_tipoa_vector(t):
     'tipo : VECTOR LLAIZQ tipo LLADER'

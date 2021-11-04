@@ -81,7 +81,8 @@ class For(Instruccion):
         
         #gen.setStack(tmpP, declara)
         for i in self.listaInstrucciones:
-            i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            if i != '':
+                i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
         
         gen.addGoto(iterador)
         gen.addLabel(iterador)

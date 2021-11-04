@@ -1,5 +1,3 @@
-
-from abstract.NodoAST import NodoAST
 from excepciones.Excepciones import Excepciones
 from abstract.Instruccion import Instruccion
 from tablaSimbolos.Tipo import tipos
@@ -14,7 +12,6 @@ class ConstruccionStruct(Instruccion):
         self.listaParametros= listaParametros
     
     def interpretar(self, tree, table):
-        
         atributosStruct = self.struct.value["atributos"]
         if len(self.listaParametros) != len(atributosStruct):
             tree.addError(Excepciones("Semántico", "Numero de parametros incorrecto", self.line, self.column))
@@ -36,26 +33,4 @@ class ConstruccionStruct(Instruccion):
         return tmp      
         
     def getNodo(self):
-        nodo = NodoAST("LLAMADA")
-        nodo.agregarHijo(self.struct.id)
-        nodo.agregarHijo("(")
-        if self.listaParametros is not None:
-            nuevo = NodoAST("LISTAPARAMETROS")
-            one = True
-            for i in self.listaParametros:
-                if one:
-                    nodo2 = NodoAST("EXPRESION")
-                    nodo2.agregarHijoNodo(i.getNodo())
-                    nuevo.agregarHijoNodo(nodo2)
-                    one = False
-                else:
-                    tmp = nuevo
-                    nuevo2 = NodoAST("EXPRESION")
-                    nuevo = NodoAST("LISTAPARAMETROS")
-                    nuevo.agregarHijoNodo(tmp)
-                    nuevo.agregarHijo(",")
-                    nuevo2.agregarHijoNodo(i.getNodo())
-                    nuevo.agregarHijoNodo(nuevo2)
-            nodo.agregarHijoNodo(nuevo)
-        nodo.agregarHijo(")")
-        return nodo
+        pass

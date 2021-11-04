@@ -1,65 +1,91 @@
-from abstract.NodoAST import NodoAST
-from excepciones.Excepciones import Excepciones
-
 from abstract.Instruccion import Instruccion
+from abstract.Retorno import Retornar
+from expression.Variable import Variable
+from instrucciones.AccesoVector import AccesoVector
+from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
 class AccesoAtributo(Instruccion):
-    def __init__(self, idVar, listaID, line, column):
+    def __init__(self, idVar, listaID, line, column, isVec):
         super().__init__(tipos.CADENA, line, column)
         self.line = line
         self.column = column
-        self.idVar = idVar
+        self.id = idVar
         self.listaID = listaID
+        self.isVec = isVec
     
     def interpretar(self, tree, table):
-        variable = table.getVariable(self.idVar)
-        if variable is None:
-            tree.addError(Excepciones("Semántico", "No existe la variable", self.line, self.column))
-            return Excepciones("Semantico", "No existe la variable", self.line, self.column)
-        if variable.tipo != tipos.STRUCT:
-            tree.addError(Excepciones("Semántico", "El id no es de una variable tipo struct", self.line, self.column))
-            return Excepciones("Semantico", "El id no es de una variable tipo struct", self.line, self.column)
-        valor = None
-        dic = variable.value
-        for i in range(len(self.listaID)):
-            lavaes = dic.keys()
-            if self.listaID[i] in dic.keys():
-                if i == len(self.listaID) - 1:
-                    valor = dic[self.listaID[i]]
-                    #valor = valor.interpretar(tree, table)
-                    return valor
+        struct = table.getVariable(self.id)
+        if struct is None:
+            #Error
+            print("No existe el struct")
+            return
+        '''elif struct.tipo != tipos.STRUCT:
+            #Error
+            print("La variable no es tipo struct")
+            return'''
+        declara = Variable(self.id, self.line, self.column)
+        variable = declara.interpretar(tree, table)
+        
+        genAux = C3D()
+        gen = genAux.getInstance()
+        gen.addComment("Empezando acceso atributo")
+        
+        inicio = gen.addTemp() 
+        gen.addExp(inicio, variable.value, '', '')        
+        
+        #VALIDANDO LISTA DE ATRIBUTOS
+        dic = table.getStruct(struct.struct)
+        for att in range(len(self.listaID)):
+            existe = False
+            cont = 0;
+            for i in dic[1]:
+                if i.id == self.listaID[att]:
+                    existe = True
+                    break;
+                cont += 1
+            if existe == False:
+                #Error
+                print("No existe el atributo")
+                return
+            if att == len(self.listaID) - 1:
+                #FINAL DE LA LISTA ID
+                gen.addExp(inicio, inicio, '+', cont)
+                tmp = gen.addTemp()
+                gen.getHeap(tmp, inicio)
+                tipo = dic[1][cont].tipo
+                if tipo == tipos.BOOLEAN:
+                    gen.addComment("Acceso devolviendo boolean")
+                    gen.addComment("Finalizando acceso atributo")
+                    pass
+                elif tipo == tipos.VECTOR or type(tipo) is list:
+                    gen.addComment("Acceso devolviendo vector")
+                    gen.addComment("Finalizando acceso atributo")
+                    return Retornar(tmp, tipos.VECTOR, True, tipo)
                 else:
-                    if dic[self.listaID[i]].tipo == tipos.STRUCT:
-                        valor = dic[self.listaID[i]]
-                        dic = valor.value
+                    gen.addComment("Finalizando acceso atributo")
+                    return Retornar(tmp, tipo, True)
+            else:
+                if isinstance(dic[1][cont].tipo, tipos):
+                    #Error
+                    print("No existe el struct")
+                    return
+                else:
+                    tmp = table.getStruct(dic[1][cont].tipo)
+                    if tmp is not None:
+                        dic = tmp
+                        gen.addComment("Cambiando inicio de struct")
+                        tmpH = gen.addTemp()
+                        gen.addExp(tmpH, inicio, '+', cont)
+                        gen.getHeap(inicio, tmpH)
+                        #gen.addExp(inicio, inicio, '+', cont)
+                        gen.addComment("Ejecutando siguiente atributo")
                         continue
                     else:
-                        #No existe el dic
-                        tree.addError(Excepciones("Semántico", "El valor del atriuto no es de tipo struct", self.line, self.column))
-                        return Excepciones("Semantico", "El valor del atriuto no es de tipo struct", self.line, self.column)
-            else:
-                #la llave no existe
-                tree.addError(Excepciones("Semántico", "No existe el atributo", self.line, self.column))
-                return Excepciones("Semantico", "No existe el atributo", self.line, self.column)
+                        #Error
+                        print("No existe el struct")
+                        return
+                        
             
     def getNodo(self):
-        nodo = NodoAST("ACCESOATRIBUTO")
-        nodo.agregarHijo(self.idVar)
-        nodo.agregarHijo(".")
-        nuevo = NodoAST("LISTAID")
-        one = True;
-        for i in self.listaID:
-            if one:
-                nuevo.agregarHijo(i)
-                one = False
-            else:
-                tmp = nuevo
-                nuevo2 = NodoAST("ID")
-                nuevo2.agregarHijo(".")
-                nuevo2.agregarHijo(i)
-                nuevo = NodoAST("LISTAID")
-                nuevo.agregarHijoNodo(tmp)
-                nuevo.agregarHijoNodo(nuevo2)
-        nodo.agregarHijoNodo(nuevo)
-        return nodo
+        pass
