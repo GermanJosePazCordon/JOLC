@@ -117,7 +117,7 @@ class For(Instruccion):
         if variable is None:
             gen.addComment("Declarando variable iteradora")
             value = Primitiva(tipos.CARACTER, 'A', self.line, self.column)
-            declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
+            declara = DeclararVariable(None, self.variable, value, None, self.line, self.column)
             val = declara.interpretar(tree, tabla)
             if isinstance(val, Excepciones): return val
         variable = tabla.getVariable(self.variable)

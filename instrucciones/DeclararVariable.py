@@ -17,8 +17,8 @@ class DeclararVariable(Instruccion):
     def interpretar(self, tree, table):
         '''if self.tipo is not None and self.tipo != self.value.tipo:
             #Error
-            print("Tipos incorrectos al declarar variable")
-            return'''
+            tree.addError(Excepciones("Semántico", "Tipos incorrectos al declarar variable", self.line, self.column))
+            return Excepciones("Semántico", "Tipos incorrectos al declarar variable", self.line, self.column)'''
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addComment("Empezando declaracion varible")

@@ -25,6 +25,7 @@ class C3D:
         self.BpotenciaString = False
         self.Bmodulo = False
         self.BcompararString = False
+        self.BtoString = False
         
     def cleanAll(self):
         # Contadores
@@ -527,4 +528,96 @@ class C3D:
         self.endFun()
         self.inNatives = False 
     
-    
+    def toString(self):
+        if self.BtoString:
+            return
+        self.BtoString = True
+        self.inNatives = True
+        self.initFun("toString")
+        
+        if self.imath == False:
+            self.imports += ';\n\t"math"'
+            self.imath = True
+            
+        t0 = self.addTemp()
+        t1 = self.addTemp()
+        t2 = self.addTemp()
+        exit = self.newLabel()
+        
+        self.addExp(t0, 'H', '', '')
+        self.addExp(t1, 'P', '+', '1')
+        self.getStack(t2, t1)
+        
+        l0 = self.newLabel()
+        
+        self.newIF(t2, '>', 0, l0)
+        self.setHeap('H', 45)
+        self.nextHeap()
+        self.addExp(t2, 0, '-', t2)
+        self.addLabel(l0)
+        
+        l1 = self.newLabel()
+        self.newIF(t2, '<', 1, l1)
+        self.newIF(t2, '<', 10, l1)
+        t3 = self.addTemp()
+        self.addExp(t3, 1, '', '')
+
+        self.codeIn(f'{t1} = math.Mod({t2},{1});\n')
+        self.addExp(t1, t2, '-', t1)
+        l3 = self.newLabel()
+        l4 = self.newLabel()
+        self.addLabel(l3)
+        
+        self.newIF(t1, '<', 10, l4)
+        self.addExp(t1, t1, '/', 10)
+        t4 = self.addTemp()
+        
+        self.codeIn(f'{t4} = math.Mod({t1},{1});\n')
+        self.addExp(t1, t1, '-', t4)
+        self.addExp(t3, t3, '*', 10)
+        self.addGoto(l3)
+        self.addLabel(l4)
+        
+        self.addExp(t4, t1, '+', 48)
+        self.setHeap('H', t4)
+        self.nextHeap()
+        
+        self.addExp(t1, t1, '*', t3)
+        self.addExp(t2, t2, '-', t1)
+        self.addGoto(l0)
+        self.addLabel(l1)
+        
+        self.codeIn(f'{t3} = math.Mod({t2},{1});\n')
+        self.addExp(t4, t2, '-', t3)
+        self.addExp(t3, t4, '+', 48)
+        self.addExp(t2, t2, '-', t4)
+        self.setHeap('H', t3)
+        self.nextHeap()
+        
+        self.newIF(t2, '==', 0, exit)
+        self.setHeap('H', 46)
+        self.nextHeap()
+        l6 = self.newLabel()
+        t5 = self.addTemp()
+        self.addExp(t5, 0, '', '')
+        self.addLabel(l6)
+        self.newIF(t2, '==', 0, exit)
+        self.newIF(t5, '==', 6, exit)
+        self.addExp(t2, t2, '*', 10)
+        
+        self.codeIn(f'{t3} = math.Mod({t2},{1});\n')
+        self.addExp(t3, t2, '-', t3)
+        self.addExp(t4, t3, '+', 48)
+        self.setHeap('H', t4)
+        self.nextHeap()
+        self.addExp(t2, t2, '-', t3)
+        self.addExp(t5, t5, '+', 1)
+        self.addGoto(l6)
+
+        self.addLabel(exit)
+        self.setHeap('H',-1)
+        self.nextHeap()
+        self.setStack('P', t0)
+        
+        self.endFun()
+        self.inNatives = False 

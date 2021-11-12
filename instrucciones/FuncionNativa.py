@@ -31,8 +31,28 @@ class FuncionNativa(Instruccion):
                 tree.addError(Excepciones("Semántico", "Tipo de expresion invalido para float", self.line, self.column))
                 return Excepciones("Semántico", "Tipo de expresion invalido para float", self.line, self.column)
         elif self.funcion == 'string':
-            tree.addError(Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column))
-            return Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column)
+            genAux = C3D()
+            gen = genAux.getInstance()
+            gen.addComment("Empezando toString")
+            gen.toString()
+            tmp = gen.addTemp()
+
+            gen.addExp(tmp, 'P', '+', table.size)
+
+            gen.addExp(tmp, tmp, "+", '1')
+            gen.setStack(tmp, value.value)
+
+            gen.newTable(table.size)
+            gen.callFun('toString')
+            temp = gen.addTemp()
+            gen.getStack(temp, 'P')
+            gen.getTable(table.size)
+            
+            gen.addComment("finalizando toString")
+            return Retornar(temp, tipos.CADENA, True)
+        
+            #tree.addError(Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column))
+            #return Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column)
         elif self.funcion == 'parse':
             if self.tipo == tipos.ENTERO: #and value.tipo == tipos.CADENA:
                 self.tipo = tipos.ENTERO
