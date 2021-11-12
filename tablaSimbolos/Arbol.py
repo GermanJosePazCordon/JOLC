@@ -87,7 +87,7 @@ class Arbol:
         self.grafoTabla = ""
         self.grafoTabla += "digraph {\n"
         self.grafoTabla += "\nnode [color=black, fontname=" + '"' + "Segoe UI" + '"' + "]\n"
-        self.grafoTabla += '"nombre"[shape=none, fontsize=10, margin=0, color=balck, label=<\n'
+        self.grafoTabla += '"nombre"[shape=none, fontsize=10, margin=0, color=black, label=<\n'
         self.grafoTabla += '<TABLE  border="1">\n'
         self.grafoTabla +=  '<TR><TD><FONT FACE="Segoe UI">' + "Nombre" + '</FONT></TD>'
         self.grafoTabla += '<TD><FONT FACE="Segoe UI">' + "Tipo" + '</FONT></TD>'
@@ -100,14 +100,24 @@ class Arbol:
         self.grafoTabla += "}"
         return self.grafoTabla
     
-    def recorrerTabla(self, tree):
+    def recorrerTabla(self, table):
+        tablas = []
         tabla = []
-        for i in tree.getLista():
-            for key, value in i.tabla.items():
+        tablas.append(table)
+        for i in table.tablas:
+            tablas.append(i)
+        
+        for i in tablas:
+            for key, value in table.variables.items():
                 if i.entorno == '':
                     tabla.append(self.armarTupla(key, self.getTipo(value.tipo), "global", value.row, value.column))
                 else:
                     tabla.append(self.armarTupla(key, self.getTipo(value.tipo), i.entorno, value.row, value.column))
+            for key, value in table.functions.items():
+                tabla.append(self.armarTupla(key, "Funcion", "global", value.line, value.column))
+            for key, value in table.structs.items():
+                tabla.append(self.armarTupla(key, "Struct", "global", value[3], value[4]))
+        
         tablaSet = set(tabla)
         tmp = ""
         for i in tablaSet:
@@ -118,7 +128,7 @@ class Arbol:
         self.grafoErr = "";
         self.grafoErr += "digraph {\n"
         self.grafoErr += "\nnode [color=black, fontname=" + '"' + "Segoe UI" + '"' + "]\n"
-        self.grafoErr += '"nombre"[shape=none, fontsize=10, margin=0, color=balck, label=<\n'
+        self.grafoErr += '"nombre"[shape=none, fontsize=10, margin=0, color=black, label=<\n'
         self.grafoErr += '<TABLE  border="1">\n'
         self.grafoErr +=  '<TR><TD><FONT FACE="Segoe UI">' + "No." + '</FONT></TD>'
         self.grafoErr += '<TD><FONT FACE="Segoe UI">' + "Descripcion" + '</FONT></TD>'
@@ -140,6 +150,7 @@ class Arbol:
         tmp = ""
         for i in tablaSet:
             tmp += '<TR><TD><FONT FACE="Segoe UI">' + str(cont) + '</FONT></TD>' + str(i) +"\n"
+            cont += 1;
         return str(tmp)
               
     def armarTupla(self, nombre, tipo, ambito, line, column):

@@ -169,19 +169,29 @@ class C3D:
         self.codeIn(f'fmt.Printf("%f", {value});\n')
     
     def printTrue(self):
-        self.addComment("Print 'true'")
-        self.addPrint("c", 116)
-        self.addPrint("c", 114)
-        self.addPrint("c", 117)
-        self.addPrint("c", 101)
+        self.addComment("Imprimiendo true")
+        self.addPrint("c", 116) #t
+        self.addPrint("c", 114) #r
+        self.addPrint("c", 117) #u
+        self.addPrint("c", 101) #e
 
     def printFalse(self):
-        self.addComment("Print 'false'")
-        self.addPrint("c", 102)
-        self.addPrint("c", 97)
-        self.addPrint("c", 108)
-        self.addPrint("c", 115)
-        self.addPrint("c", 101)
+        self.addComment("Imprimiendo false")
+        self.addPrint("c", 102) #f
+        self.addPrint("c", 97)  #a
+        self.addPrint("c", 108) #l
+        self.addPrint("c", 115) #s
+        self.addPrint("c", 101) #e
+    
+    def printNothing(self):
+        self.addComment("Imprimiendo nothing")
+        self.addPrint("c", 110) #n
+        self.addPrint("c", 111) #o
+        self.addPrint("c", 116) #t
+        self.addPrint("c", 104) #h
+        self.addPrint("c", 105) #i
+        self.addPrint("c", 110) #n
+        self.addPrint("c", 103) #g
     
     def printString(self):
         if self.BprintString:

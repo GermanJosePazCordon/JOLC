@@ -1,5 +1,6 @@
 from abstract.NodoAST import NodoAST
 from abstract.Instruccion import Instruccion
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
@@ -12,8 +13,8 @@ class Break(Instruccion):
     def interpretar(self, tree, table):
         if table.breakk == '':
             #Error
-            print("Break fuera de ciclo")
-            return
+            tree.addError(Excepciones("Semántico", "Break fuera de ciclo", self.line, self.column))
+            return Excepciones("Semántico", "Break fuera de ciclo", self.line, self.column)
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addGoto(table.breakk)

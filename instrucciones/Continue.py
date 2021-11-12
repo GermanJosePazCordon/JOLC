@@ -1,4 +1,5 @@
 from abstract.Instruccion import Instruccion
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
@@ -11,8 +12,8 @@ class Continue(Instruccion):
     def interpretar(self, tree, table):
         if table.continuee == '':
             #Error
-            print("Continue fuera de ciclo")
-            return
+            tree.addError(Excepciones("Semántico", "Continue fuera de ciclo", self.line, self.column))
+            return Excepciones("Semántico", "Continue fuera de ciclo", self.line, self.column)
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addGoto(table.continuee)

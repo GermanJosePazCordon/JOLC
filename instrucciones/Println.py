@@ -1,4 +1,5 @@
 from abstract.Instruccion import Instruccion
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.Tipo import tipos
 from tablaSimbolos.C3D import C3D
 
@@ -10,6 +11,7 @@ class Println(Instruccion):
     def interpretar(self, tree, table):
         for i in self.expresion:
             value = i.interpretar(tree, table)
+            if isinstance(value, Excepciones): return value
             genAux = C3D()
             gen = genAux.getInstance()
             if value.tipo == tipos.ENTERO:
@@ -26,6 +28,8 @@ class Println(Instruccion):
                 gen.addLabel(value.ef)
                 gen.printFalse()
                 gen.addLabel(tempLbl)
+            elif value.tipo == tipos.NULO:
+                gen.printNothing()
             elif value.tipo == tipos.CADENA:
                 gen.printString()
                 tmp = gen.addTemp()
@@ -63,7 +67,6 @@ class Println(Instruccion):
           
         gen.addPrint("c", 44)
         gen.addLabel(elemento)
-        
         
         gen.getHeap(tmp, inicio)
         if type(vector) is list:   

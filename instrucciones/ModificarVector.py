@@ -18,25 +18,25 @@ class ModificarVector(Instruccion):
         pos = []
         for i in self.listaPos:
             result = i.interpretar(tree, table)
-            
-            if isinstance(result, Excepciones):
-                return result
+            if isinstance(result, Excepciones): return result
             if result.tipo != tipos.ENTERO:
                 #Error
-                print("Tipo de posicion incorrecta")
-                return
+                tree.addError(Excepciones("Semántico", "Tipo de posicion de acceso invalido", self.line, self.column))
+                return Excepciones("Semántico", "Tipo de poscion de acceso invalido", self.line, self.column)
             pos.append(result.value)
             
         declara = Variable(self.id, self.line, self.column)
         variable = declara.interpretar(tree, table)
+        if isinstance(variable, Excepciones): return variable
         
         value = self.express.interpretar(tree, table)
+        if isinstance(value, Excepciones): return value
         
         types = self.verifyTipo(variable.vector, len(pos))
         if value.tipo != types[0]:
             #Error
-            print("Tipo de valor incorrecto para modificar el vector")
-            return
+            tree.addError(Excepciones("Semántico", "Tipo de valor incorrecto al modificar vector", self.line, self.column))
+            return Excepciones("Semántico", "Tipo de valor incorrecto al modificar vector", self.line, self.column)
         
         genAux = C3D()
         gen = genAux.getInstance()

@@ -1,6 +1,8 @@
-from abstract.NodoAST import NodoAST
-from excepciones.Excepciones import Excepciones
 from abstract.Instruccion import Instruccion
+from abstract.Retorno import Retornar
+from excepciones.Excepciones import Excepciones
+from expression.Variable import Variable
+from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
 class AsignarAtributo(Instruccion):
@@ -8,65 +10,71 @@ class AsignarAtributo(Instruccion):
         super().__init__(tipos.CADENA, line, column)
         self.line = line
         self.column = column
-        self.idVar = idVar
+        self.id = idVar
         self.listaID = listaID
         self.express = express
     
     def interpretar(self, tree, table):
-        variable = table.getVariable(self.idVar)
-        if variable is None:
-            tree.addError(Excepciones("Semántico", "No existe la variable", self.line, self.column))
-            return Excepciones("Semantico", "No existe la variable", self.line, self.column)
-        if variable.tipo != tipos.STRUCT:
-            tree.addError(Excepciones("Semántico", "El id no es de una variable tipo struct", self.line, self.column))
-            return Excepciones("Semantico", "El id no es de una variable tipo struct", self.line, self.column)
-        if variable.value["mutable"] == False:
-            tree.addError(Excepciones("Semántico", "El struct es inmutable", self.line, self.column))
-            return Excepciones("Semantico", "El struct es inmutable", self.line, self.column)
-        expres = self.express.interpretar(tree, table)
-        valor = None
-        dic = variable.value
-        for i in range(len(self.listaID)):
-            if self.listaID[i] in dic.keys():
-                if i == len(self.listaID) - 1:
-                    dic[self.listaID[i]] = expres
-                    return valor
-                else:
-                    if type(dic[self.listaID[i]]) is dict:
-                        valor = dic[self.listaID[i]]
-                        dic = valor
-                        break
-                    else:
-                        #No existe el dic
-                        tree.addError(Excepciones("Semántico", "El valor del atriuto no es de tipo struct", self.line, self.column))
-                        return Excepciones("Semantico", "El valor del atriuto no es de tipo struct", self.line, self.column)
-            else:
-                #la llave no existe
+        struct = table.getVariable(self.id)
+        value = self.express.interpretar(tree, table)
+        if isinstance(value, Excepciones): return value
+        if struct is None:
+            #Error
+            tree.addError(Excepciones("Semántico", "No existe el struct", self.line, self.column))
+            return Excepciones("Semántico", "No existe el struct", self.line, self.column)
+        declara = Variable(self.id, self.line, self.column)
+        variable = declara.interpretar(tree, table)
+        if isinstance(variable, Excepciones): return variable
+        
+        genAux = C3D()
+        gen = genAux.getInstance()
+        gen.addComment("Empezando acceso atributo")
+        
+        inicio = gen.addTemp() 
+        gen.addExp(inicio, variable.value, '', '')        
+        
+        #VALIDANDO LISTA DE ATRIBUTOS
+        dic = table.getStruct(struct.struct)
+        for att in range(len(self.listaID)):
+            if dic[0] == False:
+                #Error
+                tree.addError(Excepciones("Semántico", "El struct no es mutable", self.line, self.column))
+                return Excepciones("Semántico", "El struct no es mutable", self.line, self.column)
+            existe = False
+            cont = 0;
+            for i in dic[1]:
+                if i.id == self.listaID[att]:
+                    existe = True
+                    break;
+                cont += 1
+            if existe == False:
+                #Error
                 tree.addError(Excepciones("Semántico", "No existe el atributo", self.line, self.column))
-                return Excepciones("Semantico", "No existe el atributo", self.line, self.column)
-            
-    def getNodo(self):
-        nodo = NodoAST("ASIGNAR_STRUCT")
-        nodo.agregarHijo(self.idVar)
-        nodo.agregarHijo(".")
-        nuevo = NodoAST("LISTAID")
-        one = True;
-        for i in self.listaID:
-            if one:
-                nuevo.agregarHijo(i)
-                one = False
+                return Excepciones("Semántico", "No existe el atributo", self.line, self.column)
+            if att == len(self.listaID) - 1:
+                #FINAL DE LA LISTA ID
+                gen.addComment("Struct obtenido, buscando posicion del elemento")
+                gen.addExp(inicio, inicio, '+', cont)
+                gen.setHeap(inicio, value.value)
             else:
-                tmp = nuevo
-                nuevo2 = NodoAST("ID")
-                nuevo2.agregarHijo(".")
-                nuevo2.agregarHijo(i)
-                nuevo = NodoAST("LISTAID")
-                nuevo.agregarHijoNodo(tmp)
-                nuevo.agregarHijoNodo(nuevo2)
-        nodo.agregarHijoNodo(nuevo)
-        nodo.agregarHijo("=")
-        nodo2 = NodoAST("EXPRESION")
-        nodo2.agregarHijoNodo(self.express.getNodo())
-        nodo.agregarHijoNodo(nodo2)
-        nodo.agregarHijo(";")
-        return nodo
+                if isinstance(dic[1][cont].tipo, tipos):
+                    #Error
+                    tree.addError(Excepciones("Semántico", "No existe el struct", self.line, self.column))
+                    return Excepciones("Semántico", "No existe el struct", self.line, self.column)
+                else:
+                    tmp = table.getStruct(dic[1][cont].tipo)
+                    if tmp is not None:
+                        dic = tmp
+                        gen.addComment("Cambiando inicio de struct")
+                        tmpH = gen.addTemp()
+                        gen.addExp(tmpH, inicio, '+', cont)
+                        gen.getHeap(inicio, tmpH)
+                        gen.addComment("Ejecutando siguiente atributo")
+                        continue
+                    else:
+                        #Error
+                        tree.addError(Excepciones("Semántico", "No existe el struct", self.line, self.column))
+                        return Excepciones("Semántico", "No existe el struct", self.line, self.column)
+           
+    def getNodo(self):
+        pass

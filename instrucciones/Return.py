@@ -1,4 +1,5 @@
 from abstract.Instruccion import Instruccion
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
@@ -14,6 +15,7 @@ class Return(Instruccion):
         gen = genAux.getInstance()
         if self.express is not None:
             value = self.express.interpretar(tree, table)
+            if isinstance(value, Excepciones): return value
             if value.tipo == tipos.BOOLEAN:
                 tmp = gen.newLabel()
                 gen.addLabel(value.ev)

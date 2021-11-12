@@ -9,7 +9,7 @@ class Excepciones:
         self.date = time.strftime('%Y-%m-%d %H:%M:%S', time.localtime())
     
     def toString(self):
-        return str(self.tipo) + " - " + str(self.sms) + " [" + str(self.row) + ", " + str(self.column) + "]" 
+        return str(self.tipo) + " - " + str(self.sms) + " : [" + str(self.row) + ", " + str(self.column) + "]" 
     
     def show(self):
         return self.toString() + "\n"

@@ -1,5 +1,6 @@
 
 from abstract.NodoAST import NodoAST
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Entorno import Entorno
 from tablaSimbolos.Simbolo import Simbolo
@@ -14,17 +15,23 @@ class Funciones(Instruccion):
         self.id = ids
         self.tipo = tipos.FUNCION
         self.retorno = ''
+        self.retorno2 = ''
         self.vector = ''
         self.listaParametros = listaParametros
         self.listaInstrucciones = listaInstrucciones
-        if isinstance(types, tipos):
+        if types is None:
+            self.retorno = tipos.ENTERO
+        elif isinstance(types, tipos):
             self.retorno = types
+            self.retorno2 = types
         elif type(types) is list:
             self.retorno = tipos.VECTOR
+            self.retorno2 = tipos.VECTOR
             self.vector = types
         else:
             self.retorno = types
-    
+            self.retorno2 = types
+            
     def interpretar(self, tree, table):
         
         if self.listaParametros is None:
@@ -37,6 +44,8 @@ class Funciones(Instruccion):
         gen.addComment("Empezando declaracion de funciones")
         #DECLARANDO LA FUNCION CON SUS PARAMETROS
         tabla = Entorno(table)
+        tabla.entorno = self.id
+        table.addTabla(tabla)
         returnn = gen.newLabel()
         tabla.inFun = True
         tabla.returnn = returnn
@@ -57,12 +66,14 @@ class Funciones(Instruccion):
                 self.retorno = tipos.STRUCT
                 tipo = tipos.STRUCT
                 struct = i.tipo
-            tabla.setVariable(i.express.id, tipo, (i.tipo == tipos.CADENA or i.tipo == tipos.STRUCT), vec, struct)
+            tabla.setVariable(i.express.id, tipo, (i.tipo == tipos.CADENA or i.tipo == tipos.STRUCT), vec, struct, self.line, self.column)
 
         gen.initFun(self.id)
         gen.addComment("Interpretando instrucciones funcion")
         for i in self.listaInstrucciones:
-            i.interpretar(tree, tabla)
+            val = i.interpretar(tree, tabla)
+            if isinstance(val, Excepciones): return val
+        gen.addGoto(returnn)
         gen.addLabel(returnn)
         gen.endFun()
         gen.addComment("Fin declaracion de funciones")

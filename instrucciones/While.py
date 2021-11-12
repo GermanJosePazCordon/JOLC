@@ -15,8 +15,8 @@ class While(Instruccion):
     def interpretar(self, tree, table):
         if self.express.tipo != tipos.BOOLEAN:
             #Error
-            print("Tipo de condicional invalido")
-            return
+            tree.addError(Excepciones("Semántico", "Tipo invalido de condicion", self.line, self.column))
+            return Excepciones("Semántico", "Tipo invalido de condicion", self.line, self.column)
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addComment("Empezando While")
@@ -24,12 +24,16 @@ class While(Instruccion):
         gen.addGoto(continueando)
         gen.addLabel(continueando)
         condicion = self.express.interpretar(tree, table)
+        if isinstance(condicion, Excepciones): return condicion
         tabla = Entorno(table) #Nueva tabla
+        tabla.entorno = "While"
+        table.addTabla(tabla)
         tabla.breakk = condicion.ef
         tabla.continuee = continueando
         gen.addLabel(condicion.ev)
         for i in self.listaInstrucciones:
-            i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            val = i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            if isinstance(val, Excepciones): return val
         gen.addGoto(continueando) 
         gen.addLabel(condicion.ef)
         gen.addComment("Fin While")

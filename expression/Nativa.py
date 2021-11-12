@@ -1,4 +1,5 @@
 from abstract.Instruccion import Instruccion
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.Tipo import tipos
 from tablaSimbolos.C3D import C3D
 from abstract.Retorno import Retornar
@@ -14,14 +15,15 @@ class Nativa(Instruccion):
     
     def interpretar(self, tree, table):
         value = self.expresion.interpretar(tree, table)
+        if isinstance(value, Excepciones): return value
+        if value.tipo != tipos.CADENA:
+            #Error
+            tree.addError(Excepciones("Semántico", "Tipo erroneo de operacion", self.line, self.column))
+            return Excepciones("Semántico", "Tipo erroneo de operacion", self.line, self.column)
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addComment("Empezando nativas")
-        if value.tipo != tipos.CADENA:
-            #Error
-            print("Tipo de operacion erroneo")
-            return
-                
+         
         tmpH = gen.addTemp()
         gen.addExp(tmpH, value.value, '', '')
         

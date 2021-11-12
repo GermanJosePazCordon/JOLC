@@ -14,7 +14,7 @@ class Structs(Instruccion):
         lista = []
         for i in self.listaAtributos:
             lista.append(i.interpretar(tree, table))
-        table.setStruct(self.id, lista, self.mutable)
+        table.setStruct(self.id, lista, self.mutable, self.line, self.column)
     
     def getNodo(self):
         pass

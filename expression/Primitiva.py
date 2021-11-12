@@ -1,5 +1,6 @@
 from abstract.Instruccion import Instruccion
 from abstract.Retorno import Retornar
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
@@ -35,6 +36,13 @@ class Primitiva(Instruccion):
             retorno.ef = self.ef
 
             return retorno
+        elif self.tipo == tipos.NULO:
+            gen.addComment("Guardando '-1' en el heap")
+            temp = gen.addTemp()
+            gen.addExp(temp, 'H', '', '')
+            gen.setHeap('H', '-1')
+            gen.nextHeap()
+            return Retornar(temp, tipos.NULO, True)
         elif self.tipo == tipos.CADENA:
             gen.addComment("Guardando cadena en el heap")
             temp = gen.addTemp()
@@ -60,8 +68,10 @@ class Primitiva(Instruccion):
             size = len(self.value) + 1
             gen.addExp('H', 'H', '+', size)
             
-            for i in self.value: 
-                gen.setHeap(tmp, i.interpretar(tree, table).value)
+            for i in self.value:
+                value = i.interpretar(tree, table)
+                if isinstance(value, Excepciones): return value 
+                gen.setHeap(tmp, value.value)
                 gen.addExp(tmp, tmp, '+', '1')
 
             vec = self.getTipo(self.value)

@@ -83,8 +83,8 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para +")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para +", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para +", self.line, self.column)
             elif p1.tipo == tipos.DECIMAL:  # Decimal + algo
                 if p2.tipo == tipos.ENTERO:
                     # Decimal + Entero
@@ -103,12 +103,12 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para +")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para +", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para +", self.line, self.column)
             else:
                 #Error
-                print("Operandos erroneos para +")
-                return
+                tree.addError(Excepciones("Semántico", "Operandos erroneos para +", self.line, self.column))
+                return Excepciones("Semántico", "Operandos erroneos para +", self.line, self.column)
         elif self.operador == '-':
             if p1.tipo == tipos.ENTERO:  # Entero - algo
                 if p2.tipo == tipos.ENTERO:
@@ -127,8 +127,8 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para -")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para -", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para -", self.line, self.column)
             elif p1.tipo == tipos.DECIMAL:  # Decimal - algo
                 if p2.tipo == tipos.ENTERO:
                     self.tipo = tipos.DECIMAL
@@ -146,12 +146,12 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para -")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para -", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para -", self.line, self.column)
             else:
                 #Error
-                    print("Operandos erroneos para -")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para -", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para -", self.line, self.column)
         elif self.operador == '*':
             if p1.tipo == tipos.ENTERO:  # Entero * algo
                 if p2.tipo == tipos.ENTERO:
@@ -170,8 +170,8 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para *")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column)
             elif p1.tipo == tipos.DECIMAL:  # Decimal * algo
                 if p2.tipo == tipos.ENTERO:
                     self.tipo = tipos.DECIMAL
@@ -189,8 +189,8 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para *")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column)
             elif p1.tipo == tipos.CADENA:  # Cadena * algo
                 if p2.tipo == tipos.CADENA:
                     self.tipo = tipos.CADENA
@@ -214,12 +214,12 @@ class Aritmetica(Instruccion):
                     return Retornar(temp, tipos.CADENA, True)
                 else:
                     #Error
-                    print("Operandos erroneos para *")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column)
             else:
                 #Error
-                    print("Operandos erroneos para *")
-                    return
+                tree.addError(Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column))
+                return Excepciones("Semántico", "Operandos erroneos para *", self.line, self.column)
         elif self.operador == '/':
             if p1.tipo == tipos.ENTERO or p1.tipo == tipos.DECIMAL:  # Entero / algo
                 if p2.tipo == tipos.ENTERO or p2.tipo == tipos.DECIMAL:
@@ -259,12 +259,12 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para /")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para /", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para /", self.line, self.column)
             else:
                 #Error
-                print("Operandos erroneos para /")
-                return
+                tree.addError(Excepciones("Semántico", "Operandos erroneos para /", self.line, self.column))
+                return Excepciones("Semántico", "Operandos erroneos para /", self.line, self.column)
         elif self.operador == '^':
             if p1.tipo == tipos.ENTERO or p1.tipo == tipos.DECIMAL:
                 if p2.tipo == tipos.ENTERO:
@@ -295,8 +295,8 @@ class Aritmetica(Instruccion):
                     return Retornar(temp, p1.tipo, True)
                 else:
                     #Error
-                    print("Operandos erroneos para ^")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para ^", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para ^", self.line, self.column)
             elif p1.tipo == tipos.CADENA:
                 if p2.tipo == tipos.ENTERO:
                     self.tipo = tipos.CADENA
@@ -319,12 +319,12 @@ class Aritmetica(Instruccion):
                     return Retornar(temp, tipos.CADENA, True)
                 else:
                     #Error
-                    print("Operandos erroneos para ^")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para ^", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para ^", self.line, self.column)
             else:
                 #Error
-                print("Operandos erroneos para ^")
-                return
+                tree.addError(Excepciones("Semántico", "Operandos erroneos para ^", self.line, self.column))
+                return Excepciones("Semántico", "Operandos erroneos para ^", self.line, self.column)
         elif self.operador == '%':
             if p1.tipo == tipos.ENTERO or p1.tipo == tipos.DECIMAL:
                 if p2.tipo == tipos.ENTERO or p2.tipo == tipos.DECIMAL:
@@ -370,12 +370,13 @@ class Aritmetica(Instruccion):
                     return self.retorno(temp, True)
                 else:
                     #Error
-                    print("Operandos erroneos para %")
-                    return
+                    tree.addError(Excepciones("Semántico", "Operandos erroneos para %", self.line, self.column))
+                    return Excepciones("Semántico", "Operandos erroneos para %", self.line, self.column)
             else:
                 #Error
                 print("Operandos erroneos para %")
-                return
+                tree.addError(Excepciones("Semántico", "Operandos erroneos para %", self.line, self.column))
+                return Excepciones("Semántico", "Operandos erroneos para %", self.line, self.column)
             '''gen.modulo()
             tmp = gen.addTemp()
             gen.addExp(tmp, 'P', '+', table.size)
@@ -408,8 +409,8 @@ class Aritmetica(Instruccion):
                 return self.retorno(temp, True)
             else:
                 #Error
-                print("Operandos erroneos para el operador unario")
-                return
+                tree.addError(Excepciones("Semántico", "Operandos erroneos para unario", self.line, self.column))
+                return Excepciones("Semántico", "Operandos erroneos para unario", self.line, self.column)
 
     def retorno(self, result, temp): 
         return Retornar(result, self.tipo, temp)

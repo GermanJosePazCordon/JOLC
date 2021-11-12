@@ -1,5 +1,6 @@
 from abstract.Instruccion import Instruccion
 from abstract.Retorno import Retornar
+from excepciones.Excepciones import Excepciones
 from instrucciones.Llamada import Llamada
 from tablaSimbolos.Tipo import tipos
 from tablaSimbolos.C3D import C3D
@@ -42,9 +43,11 @@ class Logica(Instruccion):
             self.opU.ef = self.ev
             gen.addComment("Interpretando opU")
             pu = self.opU.interpretar(tree, table)
+            if isinstance(pu, Excepciones): return pu
             if pu.tipo != tipos.BOOLEAN:
                 # ERRORES
-                return
+                tree.addError(Excepciones("Semántico", "Operando erroneo para operador unario", self.line, self.column))
+                return Excepciones("Semántico", "Operando erroneo para operador unario", self.line, self.column)
             retorno = Retornar(None, tipos.BOOLEAN, False)
             retorno.ev = self.ev
             retorno.ef = self.ef
@@ -52,6 +55,7 @@ class Logica(Instruccion):
         
         gen.addComment("Interpretando op1")
         left = self.op1.interpretar(tree, table)
+        if isinstance(left, Excepciones): return left
         #--------------------------------------------------
         if isinstance(self.op2, Llamada) and table.inFun:
             genAux = C3D()
@@ -60,10 +64,12 @@ class Logica(Instruccion):
         #--------------------------------------------------
         if left.tipo != tipos.BOOLEAN:
             # ERRORES
-            return
+            tree.addError(Excepciones("Semántico", "Operandos erroneos", self.line, self.column))
+            return Excepciones("Semántico", "Operandos erroneos", self.line, self.column)
         gen.addLabel(lbl)
         gen.addComment("Interpretando op2")
         right = self.op2.interpretar(tree, table)
+        if isinstance(right, Excepciones): return right
         #--------------------------------------------------
         if isinstance(self.op2, Llamada) and table.inFun:
             genAux = C3D()
@@ -72,10 +78,12 @@ class Logica(Instruccion):
         #--------------------------------------------------
         if right.tipo != tipos.BOOLEAN:
             # ERRORES
-            return
+            tree.addError(Excepciones("Semántico", "Operandos erroneos", self.line, self.column))
+            return Excepciones("Semántico", "Operandos erroneos", self.line, self.column)
         retorno = Retornar(None, tipos.BOOLEAN, False)
         retorno.ev = self.ev
         retorno.ef = self.ef
+        gen.addComment("Termina logica")
         return retorno
     
     def verifyLabel(self):

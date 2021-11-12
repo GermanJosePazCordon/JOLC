@@ -1,4 +1,5 @@
 from abstract.Instruccion import Instruccion
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.Tipo import tipos
 from tablaSimbolos.C3D import C3D
 
@@ -22,9 +23,10 @@ class DeclararVariable(Instruccion):
         gen = genAux.getInstance()
         gen.addComment("Empezando declaracion varible")
         value = self.value.interpretar(tree, table)
+        if isinstance(value, Excepciones): return value
         vairable = table.getVariable(self.id)
         if vairable == None:
-            vairable = table.setVariable(self.id, value.tipo, (value.tipo == tipos.CADENA or value.tipo == tipos.STRUCT), value.vector, value.struct)
+            vairable = table.setVariable(self.id, value.tipo, (value.tipo == tipos.CADENA or value.tipo == tipos.STRUCT), value.vector, value.struct, self.line, self.column)
         vairable.tipo = value.tipo
         pos = vairable.pos
         if not vairable.isGlobal:

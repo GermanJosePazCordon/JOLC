@@ -17,6 +17,7 @@ class FuncionNativa(Instruccion):
     
     def interpretar(self, tree, table):
         value = self.expresion.interpretar(tree, table)
+        if isinstance(value, Excepciones): return value
         if self.funcion == 'float':
             genAux = C3D()
             gen = genAux.getInstance()
@@ -27,9 +28,11 @@ class FuncionNativa(Instruccion):
                 return Retornar(value.value, tipos.DECIMAL, True)
             else:
                 #Error
-                return
+                tree.addError(Excepciones("Semántico", "Tipo de expresion invalido para float", self.line, self.column))
+                return Excepciones("Semántico", "Tipo de expresion invalido para float", self.line, self.column)
         elif self.funcion == 'string':
-            pass
+            tree.addError(Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column))
+            return Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column)
         elif self.funcion == 'parse':
             if self.tipo == tipos.ENTERO: #and value.tipo == tipos.CADENA:
                 self.tipo = tipos.ENTERO
@@ -39,7 +42,8 @@ class FuncionNativa(Instruccion):
                 return self.parseFloat(tree, table, value)
             else:
                 #Error
-                return
+                tree.addError(Excepciones("Semántico", "Tipo de expresion invalido para parse", self.line, self.column))
+                return Excepciones("Semántico", "Tipo de expresion invalido para parse", self.line, self.column)
         elif self.funcion == 'trunc':
             if value.tipo == tipos.DECIMAL:
                 self.tipo = tipos.ENTERO
@@ -61,7 +65,8 @@ class FuncionNativa(Instruccion):
                 return Retornar(res, tipos.ENTERO, True)
             else:
                 #Error
-                return  
+                tree.addError(Excepciones("Semántico", "Tipo de expresion invalido para trunc", self.line, self.column))
+                return Excepciones("Semántico", "Tipo de expresion invalido para trunc", self.line, self.column)
         elif self.funcion == 'length':
             genAux = C3D()
             gen = genAux.getInstance()
@@ -74,10 +79,12 @@ class FuncionNativa(Instruccion):
                 return Retornar(tmp, tipos.ENTERO, True)
             else:
                 #Error
-                return
+                tree.addError(Excepciones("Semántico", "Tipo de expresion invalido para length", self.line, self.column))
+                return Excepciones("Semántico", "Tipo de expresion invalido para length", self.line, self.column)
         else:
             #Error
-                return
+            tree.addError(Excepciones("Semántico", "Tipo de funcion nativa no declarado", self.line, self.column))
+            return Excepciones("Semántico", "Tipo de funcion nativa no decladaro", self.line, self.column)
               
     def parseInt(self, tree, table, value):
         genAux = C3D()

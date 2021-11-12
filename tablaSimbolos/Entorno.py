@@ -3,6 +3,7 @@ from tablaSimbolos.Simbolo import Simbolo
 class Entorno:
     def __init__(self, last):
         self.last = last
+        self.entorno = ''
         # NUEVO
         self.size = 0
         self.breakk = ''
@@ -18,13 +19,16 @@ class Entorno:
         self.variables = {}
         self.functions = {}
         self.structs = {}
-        
-        
-    def setVariable(self, ids, tipo, heap, vector, struct = ""):
+        self.tablas = []
+    
+    def addTabla(self, tabla):
+        self.tablas.append(tabla)
+            
+    def setVariable(self, ids, tipo, heap, vector, struct = "", line = "", column = ""):
         if ids in self.variables.keys():
             print("Ya existe la variable")
         else:
-            variable = Simbolo(ids, tipo, self.size, self.last == None, heap, vector, struct)
+            variable = Simbolo(ids, tipo, self.size, self.last == None, heap, vector, struct, line, column)
             self.size += 1
             self.variables[ids] = variable
         return self.variables[ids]
@@ -35,8 +39,8 @@ class Entorno:
         else:
             self.functions[ids] = funcion
     
-    def setStruct(self, ids, atributo, mutable):
-        vec = [mutable, atributo, ids]
+    def setStruct(self, ids, atributo, mutable, line, column):
+        vec = [mutable, atributo, ids, line, column]
         if ids in self.structs.keys():
             print("Ya existe el struct")
         else:

@@ -28,12 +28,13 @@ class AccesoVector(Instruccion):
         pos = []
         for i in self.listaPos:
             result = i.interpretar(tree, table)
+            if isinstance(result, Excepciones): return result
             if isinstance(result, Excepciones):
                 return result
             if result.tipo != tipos.ENTERO:
                 #Error
-                print("Tipo de posicion incorrecta")
-                return
+                tree.addError(Excepciones("Semántico", "Tipo de posicion de acceso incorrecta", self.line, self.column))
+                return Excepciones("Semántico", "Tipo de posicion de acceso incorrecta", self.line, self.column)
             pos.append(result.value)
         genAux = C3D()
         gen = genAux.getInstance()
@@ -46,14 +47,13 @@ class AccesoVector(Instruccion):
         
         declara = Variable(self.id, self.line, self.column)
         variable = declara.interpretar(tree, table)
+        if isinstance(variable, Excepciones): return variable
         
         types = self.verifyTipo(variable.vector, len(pos))
-        
         
         #gen.addExp(tmp, 'P', '+', variable.pos)
         gen.addExp(tmpP, variable.value,'','')
 
-        
         error = gen.newLabel()
         salida2 = gen.newLabel()
         
@@ -99,18 +99,18 @@ class AccesoVector(Instruccion):
         ru = self.rangosup.interpretar(tree, table)
         if ri.tipo != tipos.ENTERO and ri.tipo != tipos.DECIMAL:
             #Error
-            print("Tipo incorrecto rango inferior")
-            return
+            tree.addError(Excepciones("Semántico", "Tipo incorrecto de rango inferior", self.line, self.column))
+            return Excepciones("Semántico", "Tipo incorrecto de rango inferior", self.line, self.column)
         if ru.tipo != tipos.ENTERO and ru.tipo != tipos.DECIMAL:
             #Error
-            print("Tipo incorrecto rango superior")
-            return
+            tree.addError(Excepciones("Semántico", "Tipo incorrecto de rango superior", self.line, self.column))
+            return Excepciones("Semántico", "Tipo incorrecto de rango superior", self.line, self.column)
         
         variable = table.getVariable(self.id)
         if variable is None:
             #Error
-            print("No existe la variable")
-            return
+            tree.addError(Excepciones("Semántico", "No existe la variable", self.line, self.column))
+            return Excepciones("Semántico", "No existe la variable", self.line, self.column)
         
         tmpP = gen.addTemp() 
         size = gen.addTemp()

@@ -28,6 +28,7 @@ class For(Instruccion):
             self.rango(tree, table)
         elif self.types == "cadena":
             value = self.cadena.interpretar(tree, table)
+            if isinstance(value, Excepciones): return value
             if value.tipo == tipos.CADENA:
                 self.cadenas(tree, table, value)
             else:
@@ -40,23 +41,28 @@ class For(Instruccion):
         gen = genAux.getInstance()
         gen.addComment("Empezando FOR por rango")
         ri = self.rangoinf.interpretar(tree, table)
+        if isinstance(ri, Excepciones): return ri
         ru = self.rangosup.interpretar(tree, table)
+        if isinstance(ru, Excepciones): return ru
         if ri.tipo != tipos.ENTERO and ri.tipo != tipos.DECIMAL:
             #Error
-            print("Tipo incorrecto rango inferior")
-            return
+            tree.addError(Excepciones("Semántico", "Tipo de rango inferior incorrecto", self.line, self.column))
+            return Excepciones("Semántico", "Tipo de rango inferior incorrecto", self.line, self.column)
         if ru.tipo != tipos.ENTERO and ru.tipo != tipos.DECIMAL:
             #Error
-            print("Tipo incorrecto rango superior")
-            return
+            tree.addError(Excepciones("Semántico", "Tipo de rango superior incorrecto", self.line, self.column))
+            return Excepciones("Semántico", "Tipo de rango superior incorrecto", self.line, self.column)
         
         tabla = Entorno(table) #Nueva tabla
+        tabla.entorno = "For"
+        table.addTabla(tabla)
         
         variable = tabla.getVariable(self.variable)
         if variable is None:
             gen.addComment("Declarando iterador")
             declara = DeclararVariable(ri.tipo, self.variable, self.rangoinf, None, self.line, self.column)
-            declara.interpretar(tree, tabla)
+            val  = declara.interpretar(tree, tabla)
+            if isinstance(val, Excepciones): return val
         variable = tabla.getVariable(self.variable)    
         tmpP = gen.addTemp()
         declara = gen.addTemp()
@@ -82,7 +88,8 @@ class For(Instruccion):
         #gen.setStack(tmpP, declara)
         for i in self.listaInstrucciones:
             if i != '':
-                i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+                val = i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+                if isinstance(val, Excepciones): return val
         
         gen.addGoto(iterador)
         gen.addLabel(iterador)
@@ -99,17 +106,20 @@ class For(Instruccion):
         gen.addComment("Empezando FOR por cadena")
         if cadena.tipo != tipos.CADENA:
             #Error
-            print("Tipo incorrecto cadena invalido")
-            return
+            tree.addError(Excepciones("Semántico", "La expresion de es de tipo cadena", self.line, self.column))
+            return Excepciones("Semántico", "La expresion de es de tipo cadena", self.line, self.column)
         
         tabla = Entorno(table) #Nueva tabla
+        tabla.entorno = "For"
+        table.addTabla(tabla)
         
         variable = tabla.getVariable(self.variable)
         if variable is None:
             gen.addComment("Declarando variable iteradora")
             value = Primitiva(tipos.CARACTER, 'A', self.line, self.column)
             declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
-            declara.interpretar(tree, tabla)
+            val = declara.interpretar(tree, tabla)
+            if isinstance(val, Excepciones): return val
         variable = tabla.getVariable(self.variable)
         tmpP = gen.addTemp()
         tmpH = gen.addTemp()
@@ -132,7 +142,8 @@ class For(Instruccion):
         
         gen.setStack(tmpP, tmp)
         for i in self.listaInstrucciones:
-            i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            val = i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            if isinstance(val, Excepciones): return val
             
         gen.addGoto(iterador)
         gen.addLabel(iterador)
@@ -148,10 +159,12 @@ class For(Instruccion):
         gen.addComment("Empezando FOR por vector")
         if vector.tipo != tipos.VECTOR:
             #Error
-            print("Tipo incorrecto vector invalido")
-            return
+            tree.addError(Excepciones("Semántico", "La expresion de es de tipo vector", self.line, self.column))
+            return Excepciones("Semántico", "La expresion de es de tipo vector", self.line, self.column)
 
         tabla = Entorno(table) #Nueva tabla
+        tabla.entorno = "For"
+        table.addTabla(tabla)
         
         variable = tabla.getVariable(self.variable)
         if variable is None:
@@ -162,7 +175,8 @@ class For(Instruccion):
             gen.addComment("Declarando variable iteradora")
             value = Primitiva(tipos.ENTERO, 0, self.line, self.column)
             declara = DeclararVariable(tipos.CARACTER, self.variable, value, None, self.line, self.column)
-            declara.interpretar(tree, tabla)
+            val = declara.interpretar(tree, tabla)
+            if isinstance(val, Excepciones): return val
             variable = tabla.getVariable(self.variable)
             variable.tipo = tipo
             variable.vector = vector.vector[0]
@@ -199,7 +213,8 @@ class For(Instruccion):
         #gen.setStack(tmpP, tmp)
         
         for i in self.listaInstrucciones:
-            i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            val = i.interpretar(tree, tabla) #Ejecuatamos en la nueva tabla
+            if isinstance(val, Excepciones): return val
         
         gen.addGoto(iterador)
         gen.addLabel(iterador)

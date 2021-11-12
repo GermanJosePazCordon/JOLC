@@ -78,7 +78,7 @@ reservadas = {
     'Bool'      : 'RBOOL',
     'Char'      : 'RCHAR',
     'String'    : 'RSTRING',
-    'Nothing'   : 'RNULO',
+    'nothing'   : 'RNULO',
     'Array'     : 'RARRAY',
     'Vector'    : 'VECTOR',
     
@@ -96,7 +96,7 @@ reservadas = {
     
     'function'  : 'FUNCTION',
     'struct'    : 'STRUCT',
-    'mutable'    : 'MUTABLE',
+    'mutable'   : 'MUTABLE',
     
     
     'global'    : 'GLOBAL',
@@ -428,6 +428,14 @@ def p_funciones(t):
     if t[4] == ')' : t[0] = Funciones(t[2], t[6], None, t[7], t.lineno(1), find_column(input, t.slice[1]))
     else           : t[0] = Funciones(t[2], t[7], t[4], t[8], t.lineno(1), find_column(input, t.slice[1]))
 
+def p_funciones2(t):
+    '''
+    FUNCIONES : FUNCTION ID PARIZQ LISTAPARAMETROS PARDER instrucciones END PTCOMA
+              | FUNCTION ID PARIZQ PARDER instrucciones END PTCOMA
+    '''
+    if t[4] == ')' : t[0] = Funciones(t[2], None, None, t[5], t.lineno(1), find_column(input, t.slice[1]))
+    else           : t[0] = Funciones(t[2], None, t[4], t[6], t.lineno(1), find_column(input, t.slice[1]))
+
 def p_lista_parametros1(t):
     'LISTAPARAMETROS : LISTAPARAMETROS COMA EXPRESION'
     t[1].append(Parametro(t[3], None, 0, 0))
@@ -474,7 +482,7 @@ def p_structs(t):
                     | MUTABLE STRUCT ID LISTAATRIBUTO END PTCOMA
     '''
     if t[1] == 'struct': t[0] = Structs(False, t[2], t[3], t.lineno(1), find_column(input, t.slice[1]))
-    else: t[0] = Structs(True, t[3], t[4], t.lineno(1), find_column(input, t.slice[1]))
+    else               : t[0] = Structs(True, t[3], t[4], t.lineno(1), find_column(input, t.slice[1]))
 
 def p_struct_lista_atributo1(t):
     'LISTAATRIBUTO : LISTAATRIBUTO ATRIBUTO'
@@ -723,11 +731,6 @@ def parse(inputs):
     input = inputs
     ast = Arbol(parser.parse(input))
     tabla = Entorno(None)
-    #tabla = tablaSimbolos(None)
-    #ast.addTabla(tabla)
-    #ast.setGlobal(tabla)
-    #print(str(ast.getInstrucciones()))
-
     
     for i in ast.getInstruccion():
         if i == '':
@@ -737,6 +740,6 @@ def parse(inputs):
         
         if isinstance(tmp, Excepciones):
             print(str(tmp.show()))
-            
+    
+    ast.AST = tabla
     return ast
-    #print(str(ast.getConsola()))

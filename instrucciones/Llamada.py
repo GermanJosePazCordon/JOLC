@@ -1,5 +1,6 @@
 from abstract.Instruccion import Instruccion
 from abstract.Retorno import Retornar
+from excepciones.Excepciones import Excepciones
 from tablaSimbolos.C3D import C3D
 from tablaSimbolos.Tipo import tipos
 
@@ -19,23 +20,23 @@ class Llamada(Instruccion):
             funcion = table.getStruct(self.id)
             if funcion is None:
                 #Error
-                print("No existe la funcion")
-                return
+                tree.addError(Excepciones("Semántico", "No existe la funcion", self.line, self.column))
+                return Excepciones("Semántico", "No existe la funcion", self.line, self.column)
             return self.isStruct(tree, table, funcion)
         if funcion.tipo == tipos.FUNCION:
             return self.isFuncion(tree, table, funcion)
         else:
             #Error
-            print("El id no es de una funcion o un struct")
-            return
+            tree.addError(Excepciones("Semántico", "El id no es de una funcion o un struct", self.line, self.column))
+            return Excepciones("Semántico", "El id no es de una funcion o un struct", self.line, self.column)
         
     def isFuncion(self, tree, table, funcion):
         size = table.size
         parametrosFun = funcion.listaParametros
         if len(self.listaParametros) != len(parametrosFun):
             #Error
-            print("Numero de parametros incorrecto")
-            return
+            tree.addError(Excepciones("Semántico", "Numero incorrecto de parametros", self.line, self.column))
+            return Excepciones("Semántico", "Numero incorrecto de parametros", self.line, self.column)
         genAux = C3D()
         gen = genAux.getInstance()
         gen.addComment("Empezando llamada funcion")
@@ -44,7 +45,9 @@ class Llamada(Instruccion):
             tmp = gen.temps[len(gen.temps) - 1]
             if isinstance(i.express, Llamada) and table.inFun:
                 gen.saveTemp(table, tmp)
-            parametrosLlamada.append(i.express.interpretar(tree, table))
+            val = i.express.interpretar(tree, table)
+            if isinstance(val, Excepciones): return val
+            parametrosLlamada.append(val)
             if isinstance(i.express, Llamada) and table.inFun:
                 gen.getTemp(table, tmp)
         
@@ -63,7 +66,7 @@ class Llamada(Instruccion):
         gen.getStack(tmp, 'P')
         gen.getTable(size)
         
-        if funcion.retorno == tipos.BOOLEAN:
+        if funcion.retorno2 == tipos.BOOLEAN:
             gen.addComment("Asiganando ev ef llamada funcion")
             ev = gen.newLabel()
             ef = gen.newLabel()
@@ -74,12 +77,12 @@ class Llamada(Instruccion):
             retorno.ef = ef
             gen.addComment("Fin llamada funcion")
             return retorno
-        elif funcion.retorno == tipos.VECTOR:
+        elif funcion.retorno2 == tipos.VECTOR:
             gen.addComment("Fin llamada funcion")
             return Retornar(tmp, tipos.VECTOR, True, funcion.vector)
-        elif isinstance(funcion.retorno, tipos):
+        elif isinstance(funcion.retorno2, tipos):
             gen.addComment("Fin llamada funcion")
-            return Retornar(tmp, funcion.retorno, True)
+            return Retornar(tmp, funcion.retorno2, True)
         else:
             gen.addComment("Fin llamada funcion")
             return Retornar(tmp, tipos.STRUCT, True, '', funcion.retorno)
@@ -88,8 +91,8 @@ class Llamada(Instruccion):
         atributos = struct[1]
         if len(self.listaParametros) != len(atributos):
             #Error
-            print("Numero de parametros incorrecto")
-            return
+            tree.addError(Excepciones("Semántico", "Numero incorrecto de parametros", self.line, self.column))
+            return Excepciones("Semántico", "Numero incorrecto de parametros", self.line, self.column)
         
         genAux = C3D()
         gen = genAux.getInstance()
@@ -103,6 +106,7 @@ class Llamada(Instruccion):
         cont = 0
         for i in self.listaParametros:
             value = i.express.interpretar(tree, table)
+            if isinstance(value, Excepciones): return value
             gen.addComment("Guardando atributo")
             gen.setHeap(pos, value.value)
             #struct[1][cont].inicio = cont
@@ -113,3 +117,4 @@ class Llamada(Instruccion):
     
     def getNodo(self):
         pass
+    

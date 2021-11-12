@@ -28,22 +28,26 @@ class EvaluarIF(Instruccion):
             one = True 
             express = i.getExpresion()
             if express.tipo != tipos.BOOLEAN:
-                print('Tipo invalido de condicion')
-                return
+                #Error
+                tree.addError(Excepciones("Semántico", "Tipo invalido de condicion", self.line, self.column))
+                return Excepciones("Semántico", "Tipo invalido de condicion", self.line, self.column)
             gen.addComment("Interpretando condicion")
             condicion = express.interpretar(tree, table)
+            if isinstance(condicion, Excepciones): return condicion
             gen.addLabel(condicion.ev)
             instrucciones = i.getInstrucciones()
             gen.addComment("Interpretando instrucciones IF/ELSEIF")
             for j in instrucciones:
-                j.interpretar(tree, table)
+                val = j.interpretar(tree, table)
+                if isinstance(val, Excepciones): return val
             gen.addGoto(salida)
         gen.addLabel(condicion.ef)
         if self.instruccionElse != None:
             gen.addComment("Interpretando instrucciones ELSE")
             instrucciones = self.instruccionElse.getInstrucciones()
             for j in instrucciones:
-                j.interpretar(tree, table)
+                val = j.interpretar(tree, table)
+                if isinstance(val, Excepciones): return val
         gen.addLabel(salida)
         gen.addComment("Fin IF")
 
