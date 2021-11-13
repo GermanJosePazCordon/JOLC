@@ -31,7 +31,11 @@ class FuncionNativa(Instruccion):
                 tree.addError(Excepciones("Semántico", "Tipo de expresion invalido para float", self.line, self.column))
                 return Excepciones("Semántico", "Tipo de expresion invalido para float", self.line, self.column)
         elif self.funcion == 'string':
-            genAux = C3D()
+            '''if value.tipo != tipos.ENTERO or value.tipo != tipos.DECIMAL:
+                #Error
+                tree.addError(Excepciones("Semántico", "Tipo de expresion invalido para string", self.line, self.column))
+                return Excepciones("Semántico", "Tipo de expresion invalido para string", self.line, self.column)'''
+            '''genAux = C3D()
             gen = genAux.getInstance()
             gen.addComment("Empezando toString")
             gen.toString()
@@ -49,15 +53,16 @@ class FuncionNativa(Instruccion):
             gen.getTable(table.size)
             
             gen.addComment("finalizando toString")
-            return Retornar(temp, tipos.CADENA, True)
-        
-            #tree.addError(Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column))
-            #return Excepciones("Semántico", "Funcion nativa string no implementada", self.line, self.column)
+            return Retornar(temp, tipos.CADENA, True)'''
+            
+            #Error
+            tree.addError(Excepciones("Semántico", "Funcion string no implementada", self.line, self.column))
+            return Excepciones("Semántico", "Funcion string no implementada", self.line, self.column)
         elif self.funcion == 'parse':
-            if self.tipo == tipos.ENTERO: #and value.tipo == tipos.CADENA:
+            if self.tipo == tipos.ENTERO:
                 self.tipo = tipos.ENTERO
                 return self.parseInt(tree, table, value)
-            elif self.tipo == tipos.DECIMAL: #and value.tipo == tipos.CADENA:
+            elif self.tipo == tipos.DECIMAL:
                 self.tipo = tipos.DECIMAL
                 return self.parseFloat(tree, table, value)
             else:
